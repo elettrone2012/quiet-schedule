@@ -1,3 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">QuietSchedule</string>
+
+    <!-- Home -->
+    <string name="profiles">Profiles</string>
+    <string name="no_profiles_configured">No profiles configured</string>
+    <string name="new_profile">New profile</string>
+    <string name="settings">Settings</string>
+
+    <!-- DND access -->
+    <string name="dnd_access_required">Do Not Disturb access is required.</string>
+    <string name="grant_dnd_access">Grant DND access</string>
+    <string name="dnd_access_required_before_enable">Do Not Disturb access is required before enabling a profile.</string>
+
+    <!-- Profile -->
+    <string name="edit_profile">Edit profile</string>
+    <string name="profile_name">Profile name</string>
+    <string name="schedules">Schedules</string>
+    <string name="no_schedules_configured">No schedules configured</string>
+    <string name="add_schedule">Add schedule</string>
+    <string name="save_profile">Save profile</string>
+    <string name="save_changes">Save changes</string>
+    <string name="duplicate_profile">Duplicate profile</string>
+    <string name="delete_profile">Delete profile</string>
+    <string name="delete_profile_question">Delete profile?</string>
+    <string name="delete_profile_message">This will permanently delete the profile and all its schedules.</string>
+    <string name="add_schedule_before_saving">Add at least one schedule before saving changes.</string>
+    <string name="add_at_least_one_schedule">Add at least one schedule.</string>
+    <string name="profile_not_found">Profile not found</string>
+    <string name="profile_conflict">Conflict with %1$s: %2$s %3$s-%4$s</string>
+    <string name="schedule_conflict">Schedules %1$d and %2$d overlap on %3$s: %4$s-%5$s.</string>
+
+    <!-- Schedule -->
+    <string name="new_schedule">New schedule</string>
+    <string name="edit_schedule">Edit schedule</string>
+    <string name="days">Days</string>
+    <string name="time">Time</string>
+    <string name="start_time">Start time</string>
+    <string name="end_time">End time</string>
+    <string name="select_start_time">Select start time</string>
+    <string name="select_end_time">Select end time</string>
+    <string name="save_schedule">Save schedule</string>
+    <string name="delete_schedule">Delete schedule</string>
+    <string name="select_at_least_one_day">Select at least one day.</string>
+    <string name="end_time_after_start">End time must be after start time.</string>
+
+    <!-- Common -->
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="ok">OK</string>
+
+    <!-- DND policy -->
+    <string name="dnd_settings">Do Not Disturb settings</string>
+    <string name="do_not_disturb">Do Not Disturb</string>
+    <string name="priority_interruptions">Priority interruptions</string>
+    <string name="alarms">Alarms</string>
+    <string name="reminders">Reminders</string>
+    <string name="events">Events</string>
+    <string name="media">Media</string>
+    <string name="system">System</string>
+    <string name="repeat_callers">Repeat callers</string>
+
+    <string name="calls">Calls</string>
+    <string name="allow_calls">Allow calls</string>
+    <string name="messages">Messages</string>
+    <string name="allow_messages">Allow messages</string>
+    <string name="conversations">Conversations</string>
+    <string name="allow_conversations">Allow conversations</string>
+
+    <string name="anyone">Anyone</string>
+    <string name="contacts">Contacts</string>
+    <string name="starred">Starred</string>
+    <string name="important">Important</string>
+
+    <string name="suppress_visual_effects">Suppress visual effects</string>
+    <string name="full_screen_intent">Full screen intent</string>
+    <string name="lights">Lights</string>
+    <string name="peek">Peek</string>
+    <string name="status_bar">Status bar</string>
+    <string name="badge">Badge</string>
+    <string name="ambient">Ambient</string>
+    <string name="notification_list">Notification list</string>
+
+    <string name="save_dnd_settings">Save DND settings</string>
+    <string name="no_priority_interruptions">No priority interruptions allowed</string>
+    <string name="priority_options_enabled">%1$d priority options enabled</string>
+
+    <!-- Settings -->
+    <string name="notifications">Notifications</string>
+    <string name="show_status_notification">Show status notification</string>
+    <string name="show_status_notification_description">Show QuietSchedule status in a notification.</string>
+    <string name="notification_permission_required">Notification permission is required to show the status notification.</string>
+
+    <!-- Status notification -->
+    <string name="status_notification_channel">QuietSchedule status</string>
+    <string name="status_notification_channel_description">Shows the current QuietSchedule status</string>
+    <string name="quietschedule_inactive">QuietSchedule inactive</string>
+    <string name="status_active">%1$s — Do Not Disturb until %2$s</string>
+    <string name="status_next_event">Next event: %1$s, %2$s %3$s</string>
+
 </resources>

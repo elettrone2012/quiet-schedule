@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">QuietSchedule</string>
+
+    <!-- Home -->
+    <string name="profiles">Profili</string>
+    <string name="no_profiles_configured">Nessun profilo configurato</string>
+    <string name="new_profile">Nuovo profilo</string>
+    <string name="settings">Impostazioni</string>
+
+    <!-- DND access -->
+    <string name="dnd_access_required">È necessario autorizzare l’accesso a Non disturbare.</string>
+    <string name="grant_dnd_access">Autorizza Non disturbare</string>
+    <string name="dnd_access_required_before_enable">È necessario autorizzare l’accesso a Non disturbare prima di attivare un profilo.</string>
+
+    <!-- Profile -->
+    <string name="edit_profile">Modifica profilo</string>
+    <string name="profile_name">Nome profilo</string>
+    <string name="schedules">Fasce orarie</string>
+    <string name="no_schedules_configured">Nessuna fascia configurata</string>
+    <string name="add_schedule">Aggiungi fascia</string>
+    <string name="save_profile">Salva profilo</string>
+    <string name="save_changes">Salva modifiche</string>
+    <string name="duplicate_profile">Duplica profilo</string>
+    <string name="delete_profile">Elimina profilo</string>
+    <string name="delete_profile_question">Eliminare il profilo?</string>
+    <string name="delete_profile_message">Il profilo e tutte le sue fasce orarie verranno eliminati definitivamente.</string>
+    <string name="add_schedule_before_saving">Aggiungi almeno una fascia prima di salvare le modifiche.</string>
+    <string name="add_at_least_one_schedule">Aggiungi almeno una fascia.</string>
+    <string name="profile_not_found">Profilo non trovato</string>
+    <string name="profile_conflict">Conflitto con %1$s: %2$s %3$s-%4$s</string>
+    <string name="schedule_conflict">Le fasce %1$d e %2$d si sovrappongono %3$s: %4$s-%5$s.</string>
+
+    <!-- Schedule -->
+    <string name="new_schedule">Nuova fascia</string>
+    <string name="edit_schedule">Modifica fascia</string>
+    <string name="days">Giorni</string>
+    <string name="time">Orario</string>
+    <string name="start_time">Ora inizio</string>
+    <string name="end_time">Ora fine</string>
+    <string name="select_start_time">Seleziona ora di inizio</string>
+    <string name="select_end_time">Seleziona ora di fine</string>
+    <string name="save_schedule">Salva fascia</string>
+    <string name="delete_schedule">Elimina fascia</string>
+    <string name="select_at_least_one_day">Seleziona almeno un giorno.</string>
+    <string name="end_time_after_start">L’ora di fine deve essere successiva all’ora di inizio.</string>
+
+    <!-- Common -->
+    <string name="back">Indietro</string>
+    <string name="cancel">Annulla</string>
+    <string name="delete">Elimina</string>
+    <string name="ok">OK</string>
+
+    <!-- DND policy -->
+    <string name="dnd_settings">Impostazioni Non disturbare</string>
+    <string name="do_not_disturb">Non disturbare</string>
+    <string name="priority_interruptions">Interruzioni prioritarie</string>
+    <string name="alarms">Sveglie</string>
+    <string name="reminders">Promemoria</string>
+    <string name="events">Eventi</string>
+    <string name="media">Contenuti multimediali</string>
+    <string name="system">Sistema</string>
+    <string name="repeat_callers">Chiamate ripetute</string>
+
+    <string name="calls">Chiamate</string>
+    <string name="allow_calls">Consenti chiamate</string>
+    <string name="messages">Messaggi</string>
+    <string name="allow_messages">Consenti messaggi</string>
+    <string name="conversations">Conversazioni</string>
+    <string name="allow_conversations">Consenti conversazioni</string>
+
+    <string name="anyone">Chiunque</string>
+    <string name="contacts">Contatti</string>
+    <string name="starred">Preferiti</string>
+    <string name="important">Importanti</string>
+
+    <string name="suppress_visual_effects">Nascondi effetti visivi</string>
+    <string name="full_screen_intent">Schermo intero</string>
+    <string name="lights">Luci</string>
+    <string name="peek">Popup</string>
+    <string name="status_bar">Barra di stato</string>
+    <string name="badge">Badge</string>
+    <string name="ambient">Schermo ambient</string>
+    <string name="notification_list">Elenco notifiche</string>
+
+    <string name="save_dnd_settings">Salva impostazioni Non disturbare</string>
+    <string name="no_priority_interruptions">Nessuna interruzione prioritaria consentita</string>
+    <string name="priority_options_enabled">%1$d opzioni prioritarie attive</string>
+
+    <!-- Settings -->
+    <string name="notifications">Notifiche</string>
+    <string name="show_status_notification">Mostra notifica di stato</string>
+    <string name="show_status_notification_description">Mostra lo stato di QuietSchedule in una notifica.</string>
+    <string name="notification_permission_required">È necessaria l’autorizzazione alle notifiche per mostrare la notifica di stato.</string>
+
+    <!-- Status notification -->
+    <string name="status_notification_channel">Stato QuietSchedule</string>
+    <string name="status_notification_channel_description">Mostra lo stato corrente di QuietSchedule</string>
+    <string name="quietschedule_inactive">QuietSchedule inattivo</string>
+    <string name="status_active">%1$s — Non disturbare fino alle %2$s</string>
+    <string name="status_next_event">Prossimo evento: %1$s, %2$s %3$s</string>
+
+</resources>
