@@ -1,6 +1,7 @@
 package io.github.elettrone2012.quietschedule.ui.profile
 
 import android.text.format.DateFormat
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -56,6 +59,9 @@ fun ProfileEditorScreen(
     onNameChange: (String) -> Unit,
     schedules: List<Schedule>,
     dndPolicy: DndPolicy,
+    originalName: String,
+    originalSchedules: List<Schedule>,
+    originalDndPolicy: DndPolicy,
     errorMessage: String? = null,
     onBack: () -> Unit,
     onEditSchedule: (
@@ -99,6 +105,31 @@ fun ProfileEditorScreen(
         mutableStateOf(false)
     }
 
+    var showDiscardConfirmation by remember {
+        mutableStateOf(false)
+    }
+
+    /*
+     * Per un nuovo profilo la baseline è:
+     * - nome vuoto
+     * - nessuna fascia
+     * - DND predefinito
+     *
+     * Per un profilo esistente viene confrontato
+     * lo stato temporaneo con la fotografia originale
+     * ricevuta da MainActivity.
+     */
+    val hasUnsavedChanges =
+        if (!isEditing) {
+            name.isNotBlank() ||
+                    schedules.isNotEmpty() ||
+                    dndPolicy != DndPolicy()
+        } else {
+            name.trim() != originalName.trim() ||
+                    schedules != originalSchedules ||
+                    dndPolicy != originalDndPolicy
+        }
+
     val addAtLeastOneScheduleMessage =
         stringResource(
             R.string.add_at_least_one_schedule
@@ -129,6 +160,21 @@ fun ProfileEditorScreen(
                 )
             )
         }
+
+    fun requestBack() {
+        if (hasUnsavedChanges) {
+            showDiscardConfirmation = true
+        } else {
+            onBack()
+        }
+    }
+
+    /*
+     * Intercetta il Back Android e la gesture Back.
+     */
+    BackHandler {
+        requestBack()
+    }
 
     if (showDeleteConfirmation) {
         AlertDialog(
@@ -179,6 +225,55 @@ fun ProfileEditorScreen(
         )
     }
 
+    if (showDiscardConfirmation) {
+        AlertDialog(
+            onDismissRequest = {
+                showDiscardConfirmation = false
+            },
+            title = {
+                Text(
+                    stringResource(
+                        R.string.unsaved_changes_title
+                    )
+                )
+            },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.unsaved_changes_message
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDiscardConfirmation = false
+                        onBack()
+                    }
+                ) {
+                    Text(
+                        stringResource(
+                            R.string.discard_changes
+                        )
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDiscardConfirmation = false
+                    }
+                ) {
+                    Text(
+                        stringResource(
+                            R.string.continue_editing
+                        )
+                    )
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -195,7 +290,9 @@ fun ProfileEditorScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = onBack
+                        onClick = {
+                            requestBack()
+                        }
                     ) {
                         Icon(
                             imageVector =
@@ -214,6 +311,9 @@ fun ProfileEditorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(
+                    rememberScrollState()
+                )
                 .padding(16.dp),
             verticalArrangement =
                 Arrangement.spacedBy(16.dp)

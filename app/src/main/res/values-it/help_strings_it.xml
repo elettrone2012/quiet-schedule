@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help">Guida</string>
+    <string name="help_title">Guida utente</string>
+
+    <string name="help_what_title">Cos’è QuietSchedule</string>
+    <string name="help_what_body">QuietSchedule attiva e disattiva automaticamente la modalità Non disturbare di Android in base a profili settimanali configurabili. Ogni profilo definisce una o più fasce orarie e le eccezioni consentite mentre il DND è attivo. QuietSchedule non modifica Wi-Fi, rete mobile, modalità aereo, posizione o altre impostazioni non legate al DND.</string>
+
+    <string name="help_first_launch_title">Primo avvio</string>
+    <string name="help_first_launch_body">QuietSchedule necessita dell’accesso Android alla modalità Non disturbare. Se l’accesso non è disponibile, i profili non possono essere attivati. Se l’autorizzazione viene revocata in seguito, QuietSchedule disabilita i profili quando rileva la mancanza dell’accesso. Ripristinare l’autorizzazione non riattiva automaticamente i profili. Se è attiva la notifica di stato, Android può richiedere anche l’autorizzazione alle notifiche.</string>
+
+    <string name="help_profiles_title">Profili</string>
+    <string name="help_profiles_body">Un profilo contiene un nome, una o più fasce settimanali, le impostazioni delle eccezioni DND e lo stato attivo/disattivo. Le modifiche diventano definitive solo quando salvi il profilo. Se provi a uscire con modifiche non salvate, QuietSchedule mostra un avviso prima di scartarle. I profili duplicati vengono creati disabilitati. L’eliminazione richiede conferma.</string>
+
+    <string name="help_schedules_title">Fasce orarie</string>
+    <string name="help_schedules_body">Ogni fascia contiene uno o più giorni, un’ora di inizio e un’ora di fine. QuietSchedule non supporta fasce oltre la mezzanotte: l’ora di fine deve essere sempre successiva all\'ora di inizio nello stesso giorno. Per esempio 08:00 → 17:00 è valida, mentre 22:00 → 07:00 e 08:00 → 08:00 non sono valide. Fasce adiacenti come 06:00 → 08:00 e 08:00 → 10:00 non sono in conflitto.</string>
+
+    <string name="help_conflicts_title">Conflitti tra profili</string>
+    <string name="help_conflicts_body">Due profili abilitati non possono avere fasce sovrapposte nello stesso giorno. Un profilo disabilitato può essere salvato anche se sarebbe in conflitto. Il controllo viene applicato quando abiliti un profilo o salvi modifiche a un profilo già abilitato.</string>
+
+    <string name="help_dnd_title">Come funzionano le impostazioni DND</string>
+    <string name="help_dnd_body">QuietSchedule usa la modalità Priorità di Android. Le opzioni indicano ciò che è autorizzato a superare il silenziamento, non ciò che deve essere silenziato. OFF significa che QuietSchedule non autorizza quella categoria a superare il DND. ON significa che la categoria può superare il DND secondo le regole Android. Tutte le eccezioni sono OFF per impostazione predefinita in un nuovo profilo. Le categorie comprendono allarmi, promemoria, eventi, media, suoni di sistema, chiamanti ripetuti, chiamate, messaggi e conversazioni.</string>
+
+    <string name="help_calls_messages_title">Chiamate, messaggi e conversazioni</string>
+    <string name="help_calls_messages_body">Per Chiamate e Messaggi, quando la categoria è attiva, puoi autorizzare chiunque, i contatti oppure i contatti preferiti. Per Conversazioni puoi autorizzare chiunque oppure le conversazioni importanti. QuietSchedule usa i filtri standard DND di Android e non deve leggere direttamente la rubrica per configurarli.</string>
+
+    <string name="help_apps_title">WhatsApp, Telegram e altre app</string>
+    <string name="help_apps_body">QuietSchedule non filtra direttamente le singole app. Non esiste una regola per-app come “silenzia WhatsApp ma lascia Telegram”. QuietSchedule configura la policy DND di Android; Android e le singole app determinano se una notifica viene classificata come messaggio, conversazione o altra categoria.</string>
+
+    <string name="help_visual_effects_title">Effetti visivi delle notifiche</string>
+    <string name="help_visual_effects_body">QuietSchedule può chiedere ad Android di sopprimere specifici effetti visivi per le notifiche filtrate dal DND, tra cui intent a schermo intero, luci di notifica, popup o heads-up, presenza nella barra di stato, badge, visualizzazione ambient e presenza nell’elenco notifiche. Queste impostazioni sono indipendenti dalle eccezioni sonore.</string>
+
+    <string name="help_examples_title">Esempi</string>
+    <string name="help_examples_body">Notte: abilita Allarmi e consenti Chiamate solo dai contatti preferiti; lascia Messaggi, Conversazioni, Media e Sistema su OFF. Riunione: lascia tutte le eccezioni DND su OFF. Lavoro: abilita solo le eccezioni che vuoi autorizzare durante l’orario di lavoro.</string>
+
+    <string name="help_manual_dnd_title">Modifiche manuali al DND</string>
+    <string name="help_manual_dnd_body">QuietSchedule non controlla continuamente le modifiche manuali al DND. A ogni evento di pianificazione ricalcola e applica lo stato desiderato. Una modifica manuale effettuata tra due eventi programmati non viene corretta immediatamente.</string>
+
+    <string name="help_time_changes_title">Riavvio, cambio ora e fuso orario</string>
+    <string name="help_time_changes_body">QuietSchedule ricostruisce la pianificazione dopo eventi rilevanti come riavvio del dispositivo, cambio manuale di data o ora, cambio di fuso orario e transizioni dell’ora legale. Le fasce settimanali usano sempre l’ora locale del dispositivo.</string>
+
+    <string name="help_precision_title">Precisione della pianificazione</string>
+    <string name="help_precision_body">QuietSchedule non richiede gli Exact Alarm di Android. Android può quindi ritardare un’attivazione o una disattivazione a causa di Doze, ottimizzazione batteria o altre politiche di risparmio energetico. Quando QuietSchedule viene eseguito, ricalcola lo stato corretto in base all’ora corrente.</string>
+
+    <string name="help_status_notification_title">Notifica di stato</string>
+    <string name="help_status_notification_body">La notifica di stato opzionale può mostrare il profilo attivo, il prossimo evento programmato oppure che QuietSchedule è inattivo. Può essere attivata o disattivata nelle Impostazioni.</string>
+
+    <string name="help_privacy_title">Privacy</string>
+    <string name="help_privacy_body">QuietSchedule è progettato per funzionare localmente. Non richiede accesso a Internet, posizione, file o memoria esterna, calendario, Bluetooth, Wi-Fi, accesso ai contatti per le regole DND o un account QuietSchedule. Non sono inclusi pubblicità, tracking, analytics o telemetria.</string>
+
+    <string name="help_limits_title">Limiti</string>
+    <string name="help_limits_body">QuietSchedule non supporta fasce oltre la mezzanotte, automazioni generiche, sincronizzazione cloud, regole basate sulla posizione, integrazione calendario, silenziamento diretto delle singole app o Exact Alarm come requisito.</string>
+
+    <string name="help_development_title">Come è stata sviluppata QuietSchedule</string>
+    <string name="help_development_body">QuietSchedule è stata sviluppata con supporto di intelligenza artificiale durante le attività di analisi, progettazione e programmazione.
+        Il supporto AI è stato fornito da ChatGPT, modello GPT-5.6 Sol di OpenAI, nel corso dello sviluppo svolto ad agosto 2026.
+        Le decisioni funzionali, le verifiche sul dispositivo, i test e la responsabilità finale del codice restano in carico allo sviluppatore del progetto.</string>
+</resources>

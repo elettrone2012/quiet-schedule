@@ -8,14 +8,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -43,10 +46,22 @@ fun HomeScreen(
         profile: Profile,
         enabled: Boolean
     ) -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    onHelp: () -> Unit
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
+
+    val versionName =
+        remember(context) {
+            context.packageManager
+                .getPackageInfo(
+                    context.packageName,
+                    0
+                )
+                .versionName
+                ?: ""
+        }
 
     val locale =
         if (configuration.locales.isEmpty) {
@@ -62,11 +77,22 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        stringResource(
-                            R.string.app_name
+                    Column {
+                        Text(
+                            stringResource(
+                                R.string.app_name
+                            )
                         )
-                    )
+
+                        Text(
+                            text = stringResource(
+                                R.string.app_version,
+                                versionName
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             )
         }
@@ -75,6 +101,9 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(
+                    rememberScrollState()
+                )
                 .padding(16.dp),
             verticalArrangement =
                 Arrangement.spacedBy(20.dp)
@@ -173,6 +202,17 @@ fun HomeScreen(
                 Text(
                     stringResource(
                         R.string.settings
+                    )
+                )
+            }
+
+            Button(
+                onClick = onHelp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(
+                        R.string.help
                     )
                 )
             }

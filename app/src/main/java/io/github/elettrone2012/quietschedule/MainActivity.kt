@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.format.DateFormat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -42,12 +43,12 @@ import io.github.elettrone2012.quietschedule.ui.settings.SettingsScreen
 import io.github.elettrone2012.quietschedule.ui.theme.QuietScheduleTheme
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 import java.util.UUID
-import android.text.format.DateFormat
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import io.github.elettrone2012.quietschedule.ui.help.HelpScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -96,10 +97,18 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(false)
                 }
 
+                var showHelp by remember {
+                    mutableStateOf(false)
+                }
+
                 var editingProfileId by remember {
                     mutableStateOf<String?>(null)
                 }
 
+                /*
+                 * Stato temporaneo modificabile
+                 * del profilo aperto nell'editor.
+                 */
                 var profileName by remember {
                     mutableStateOf("")
                 }
@@ -114,6 +123,29 @@ class MainActivity : ComponentActivity() {
                     remember {
                         mutableStateListOf<Schedule>()
                     }
+
+                /*
+                 * Snapshot immutabile dello stato originale.
+                 *
+                 * Serve per rilevare modifiche non salvate,
+                 * anche quando si passa attraverso gli editor
+                 * delle fasce o delle impostazioni DND.
+                 */
+                var originalProfileName by remember {
+                    mutableStateOf("")
+                }
+
+                var originalProfileSchedules by remember {
+                    mutableStateOf<List<Schedule>>(
+                        emptyList()
+                    )
+                }
+
+                var originalProfileDndPolicy by remember {
+                    mutableStateOf(
+                        DndPolicy()
+                    )
+                }
 
                 var editingScheduleIndex by remember {
                     mutableStateOf<Int?>(null)
@@ -163,11 +195,22 @@ class MainActivity : ComponentActivity() {
 
                 fun closeProfileEditor() {
                     errorMessage = null
+
                     editingProfileId = null
+
                     profileName = ""
-                    profileDndPolicy = DndPolicy()
+                    profileDndPolicy =
+                        DndPolicy()
                     profileSchedules.clear()
+
+                    originalProfileName = ""
+                    originalProfileSchedules =
+                        emptyList()
+                    originalProfileDndPolicy =
+                        DndPolicy()
+
                     editingScheduleIndex = null
+
                     showScheduleEditor = false
                     showDndPolicyEditor = false
                     showProfileEditor = false
@@ -214,15 +257,20 @@ class MainActivity : ComponentActivity() {
                         R.string.profile_conflict,
                         profileName,
                         localizedDay,
-                        start.format(timeFormatter),
-                        end.format(timeFormatter)
+                        start.format(
+                            timeFormatter
+                        ),
+                        end.format(
+                            timeFormatter
+                        )
                     )
                 }
 
                 when {
                     showScheduleEditor -> {
                         ScheduleEditorScreen(
-                            schedule = editingSchedule,
+                            schedule =
+                                editingSchedule,
                             onBack = {
                                 showScheduleEditor =
                                     false
@@ -251,7 +299,8 @@ class MainActivity : ComponentActivity() {
                             },
                             onDelete =
                                 if (
-                                    editingScheduleIndex != null
+                                    editingScheduleIndex !=
+                                    null
                                 ) {
                                     {
                                         val index =
@@ -302,19 +351,36 @@ class MainActivity : ComponentActivity() {
                         ProfileEditorScreen(
                             isEditing =
                                 editingProfileId != null,
-                            name = profileName,
+
+                            name =
+                                profileName,
+
                             onNameChange = {
                                 profileName = it
                             },
+
                             schedules =
                                 profileSchedules,
+
                             dndPolicy =
                                 profileDndPolicy,
+
+                            originalName =
+                                originalProfileName,
+
+                            originalSchedules =
+                                originalProfileSchedules,
+
+                            originalDndPolicy =
+                                originalProfileDndPolicy,
+
                             errorMessage =
                                 errorMessage,
+
                             onBack = {
                                 closeProfileEditor()
                             },
+
                             onEditSchedule = { _, index ->
                                 editingScheduleIndex =
                                     index
@@ -322,10 +388,12 @@ class MainActivity : ComponentActivity() {
                                 showScheduleEditor =
                                     true
                             },
+
                             onEditDndPolicy = {
                                 showDndPolicyEditor =
                                     true
                             },
+
                             onSave = {
                                     name,
                                     schedules,
@@ -338,24 +406,28 @@ class MainActivity : ComponentActivity() {
                                     if (profileId == null) {
                                         val newProfile =
                                             Profile(
-                                                name = name,
-                                                enabled = false,
+                                                name =
+                                                    name,
+                                                enabled =
+                                                    false,
                                                 dndPolicy =
                                                     dndPolicy,
                                                 schedules =
                                                     schedules
                                             )
 
-                                        repository.saveProfiles(
-                                            profiles +
-                                                    newProfile
-                                        )
+                                        repository
+                                            .saveProfiles(
+                                                profiles +
+                                                        newProfile
+                                            )
                                     } else {
                                         val originalProfile =
-                                            profiles.firstOrNull {
-                                                it.id ==
-                                                        profileId
-                                            }
+                                            profiles
+                                                .firstOrNull {
+                                                    it.id ==
+                                                            profileId
+                                                }
 
                                         if (
                                             originalProfile ==
@@ -363,20 +435,23 @@ class MainActivity : ComponentActivity() {
                                         ) {
                                             errorMessage =
                                                 getString(
-                                                    R.string.profile_not_found
+                                                    R.string
+                                                        .profile_not_found
                                                 )
 
                                             return@launch
                                         }
 
                                         val updatedProfile =
-                                            originalProfile.copy(
-                                                name = name,
-                                                schedules =
-                                                    schedules,
-                                                dndPolicy =
-                                                    dndPolicy
-                                            )
+                                            originalProfile
+                                                .copy(
+                                                    name =
+                                                        name,
+                                                    schedules =
+                                                        schedules,
+                                                    dndPolicy =
+                                                        dndPolicy
+                                                )
 
                                         when (
                                             val result =
@@ -415,7 +490,8 @@ class MainActivity : ComponentActivity() {
                                             SaveProfileResult.ProfileNotFound -> {
                                                 errorMessage =
                                                     getString(
-                                                        R.string.profile_not_found
+                                                        R.string
+                                                            .profile_not_found
                                                     )
 
                                                 return@launch
@@ -434,6 +510,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                 }
                             },
+
                             onDuplicateProfile =
                                 if (
                                     editingProfileId != null
@@ -442,9 +519,12 @@ class MainActivity : ComponentActivity() {
                                         val sourceId =
                                             editingProfileId
 
-                                        if (sourceId != null) {
+                                        if (
+                                            sourceId != null
+                                        ) {
                                             val newId =
-                                                UUID.randomUUID()
+                                                UUID
+                                                    .randomUUID()
                                                     .toString()
 
                                             val duplicated =
@@ -464,7 +544,9 @@ class MainActivity : ComponentActivity() {
                                                                 newId
                                                     }
 
-                                            if (copy != null) {
+                                            if (
+                                                copy != null
+                                            ) {
                                                 lifecycleScope
                                                     .launch {
                                                         repository
@@ -489,6 +571,22 @@ class MainActivity : ComponentActivity() {
                                                                 copy.schedules
                                                             )
 
+                                                        /*
+                                                         * La copia è già stata
+                                                         * persistita: diventa
+                                                         * quindi la nuova
+                                                         * baseline.
+                                                         */
+                                                        originalProfileName =
+                                                            copy.name
+
+                                                        originalProfileDndPolicy =
+                                                            copy.dndPolicy
+
+                                                        originalProfileSchedules =
+                                                            copy.schedules
+                                                                .toList()
+
                                                         editingScheduleIndex =
                                                             null
 
@@ -501,6 +599,7 @@ class MainActivity : ComponentActivity() {
                                 } else {
                                     null
                                 },
+
                             onDeleteProfile =
                                 if (
                                     editingProfileId != null
@@ -546,8 +645,10 @@ class MainActivity : ComponentActivity() {
                             showStatusNotification =
                                 appSettings
                                     .showStatusNotification,
+
                             notificationPermissionGranted =
                                 notificationPermissionGranted,
+
                             onShowStatusNotificationChange = {
                                     enabled ->
 
@@ -586,19 +687,32 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             },
+
                             onBack = {
                                 showSettings = false
                             }
                         )
                     }
 
+                    showHelp -> {
+                        HelpScreen(
+                            onBack = {
+                                showHelp = false
+                            }
+                        )
+                    }
+
                     else -> {
                         HomeScreen(
-                            profiles = profiles,
+                            profiles =
+                                profiles,
+
                             errorMessage =
                                 errorMessage,
+
                             dndAccessGranted =
                                 dndAccessGranted,
+
                             onRequestDndAccess = {
                                 startActivity(
                                     Intent(
@@ -607,31 +721,75 @@ class MainActivity : ComponentActivity() {
                                     )
                                 )
                             },
+
                             onNewProfile = {
                                 errorMessage = null
-                                editingProfileId = null
+
+                                editingProfileId =
+                                    null
+
                                 profileName = ""
+
                                 profileDndPolicy =
                                     DndPolicy()
+
                                 profileSchedules.clear()
+
+                                /*
+                                 * Baseline vuota per un
+                                 * nuovo profilo.
+                                 */
+                                originalProfileName = ""
+
+                                originalProfileDndPolicy =
+                                    DndPolicy()
+
+                                originalProfileSchedules =
+                                    emptyList()
+
                                 editingScheduleIndex =
                                     null
+
                                 showProfileEditor =
                                     true
                             },
+
                             onProfileClick = { profile ->
                                 errorMessage = null
+
                                 editingProfileId =
                                     profile.id
+
+                                /*
+                                 * Copia modificabile.
+                                 */
                                 profileName =
                                     profile.name
+
                                 profileDndPolicy =
                                     profile.dndPolicy
 
                                 profileSchedules.clear()
+
                                 profileSchedules.addAll(
                                     profile.schedules
                                 )
+
+                                /*
+                                 * Snapshot originale.
+                                 *
+                                 * Non deve essere modificato
+                                 * durante l'editing.
+                                 */
+                                originalProfileName =
+                                    profile.name
+
+                                originalProfileDndPolicy =
+                                    profile.dndPolicy
+
+                                originalProfileSchedules =
+                                    profile.schedules
+                                        .toList()
 
                                 editingScheduleIndex =
                                     null
@@ -639,6 +797,7 @@ class MainActivity : ComponentActivity() {
                                 showProfileEditor =
                                     true
                             },
+
                             onProfileEnabledChange = {
                                     profile,
                                     enabled ->
@@ -696,7 +855,8 @@ class MainActivity : ComponentActivity() {
                                                 EnableProfileResult.ProfileNotFound -> {
                                                     errorMessage =
                                                         getString(
-                                                            R.string.profile_not_found
+                                                            R.string
+                                                                .profile_not_found
                                                         )
 
                                                     return@launch
@@ -727,11 +887,15 @@ class MainActivity : ComponentActivity() {
                                         )
                                 }
                             },
+
                             onSettings = {
                                 notificationPermissionGranted =
                                     hasNotificationPermission()
 
                                 showSettings = true
+                            },
+                            onHelp = {
+                                showHelp = true
                             }
                         )
                     }

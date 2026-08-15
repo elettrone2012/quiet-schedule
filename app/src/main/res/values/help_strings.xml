@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help">Help</string>
+    <string name="help_title">User guide</string>
+
+    <string name="help_what_title">What QuietSchedule is</string>
+    <string name="help_what_body">QuietSchedule automatically enables and disables Android Do Not Disturb according to configurable weekly profiles. Each profile defines one or more time ranges and the exceptions allowed while DND is active. QuietSchedule does not modify Wi-Fi, mobile data, airplane mode, location, or unrelated system settings.</string>
+
+    <string name="help_first_launch_title">First launch</string>
+    <string name="help_first_launch_body">QuietSchedule needs Android Do Not Disturb access. If access is unavailable, profiles cannot be enabled. If permission is revoked later, QuietSchedule disables profiles when it detects the missing access. Granting permission again does not automatically re-enable them. If the status notification is enabled, Android may also request notification permission.</string>
+
+    <string name="help_profiles_title">Profiles</string>
+    <string name="help_profiles_body">A profile contains a name, one or more weekly time ranges, DND exception settings, and an enabled/disabled state. Changes are committed only when you save the profile. If you try to leave with unsaved changes, QuietSchedule warns you before discarding them. Duplicated profiles start disabled. Deleting a profile requires confirmation.</string>
+
+    <string name="help_schedules_title">Time ranges</string>
+    <string name="help_schedules_body">Each time range contains one or more days, a start time, and an end time. QuietSchedule does not support overnight ranges: the end time must always be later than the start time on the same day. For example, 08:00 → 17:00 is valid, while 22:00 → 07:00 and 08:00 → 08:00 are invalid. Adjacent ranges such as 06:00 → 08:00 and 08:00 → 10:00 do not conflict.</string>
+
+    <string name="help_conflicts_title">Conflicts between profiles</string>
+    <string name="help_conflicts_body">Two enabled profiles cannot overlap on the same day. A disabled profile may be saved even if it would conflict. Conflicts are enforced when enabling a profile or saving changes to an already enabled profile.</string>
+
+    <string name="help_dnd_title">How DND settings work</string>
+    <string name="help_dnd_body">QuietSchedule uses Android Priority interruption mode. The options define what is allowed to bypass silencing, not what should be silenced. OFF means QuietSchedule does not allow that category to bypass DND. ON means the category may bypass DND according to Android rules. All exceptions are OFF by default for a new profile. Available categories include alarms, reminders, events, media, system sounds, repeat callers, calls, messages, and conversations.</string>
+
+    <string name="help_calls_messages_title">Calls, messages and conversations</string>
+    <string name="help_calls_messages_body">For Calls and Messages, when enabled, you can allow anyone, contacts, or starred contacts. For Conversations you can allow anyone or important conversations. QuietSchedule uses Android\'s standard DND sender scopes and does not need to read your contacts to configure them.</string>
+
+    <string name="help_apps_title">WhatsApp, Telegram and other apps</string>
+    <string name="help_apps_body">QuietSchedule does not filter individual apps directly. There is no per-app rule such as “silence WhatsApp but allow Telegram”. QuietSchedule configures Android\'s DND policy, while Android and each app determine whether a notification is classified as a message, conversation, or another category.</string>
+
+    <string name="help_visual_effects_title">Notification visual effects</string>
+    <string name="help_visual_effects_body">QuietSchedule can ask Android to suppress specific visual effects for notifications filtered by DND, including full-screen intents, notification lights, peek or heads-up presentation, status-bar appearance, badges, ambient-display appearance, and notification-list appearance. These settings are independent of audible exceptions.</string>
+
+    <string name="help_examples_title">Examples</string>
+    <string name="help_examples_body">Night: enable Alarms and allow Calls only from starred contacts; leave Messages, Conversations, Media, and System off. Meeting: leave all DND exceptions off. Work: enable only the exceptions that should be allowed during working hours.</string>
+
+    <string name="help_manual_dnd_title">Manual DND changes</string>
+    <string name="help_manual_dnd_body">QuietSchedule does not continuously monitor manual DND changes. At each QuietSchedule scheduling event, it recalculates and applies the desired state. A manual change made between scheduled events is not immediately overridden.</string>
+
+    <string name="help_time_changes_title">Reboot, clock changes and time zones</string>
+    <string name="help_time_changes_body">QuietSchedule rebuilds scheduling after relevant events such as device reboot, manual date or time changes, time-zone changes, and daylight-saving transitions. Weekly schedules always use the device\'s local wall-clock time.</string>
+
+    <string name="help_precision_title">Scheduling precision</string>
+    <string name="help_precision_body">QuietSchedule does not require Android Exact Alarms. Android may therefore delay an activation or deactivation because of Doze, battery optimization, or other power-management policies. When QuietSchedule runs, it recalculates the correct state from the current time.</string>
+
+    <string name="help_status_notification_title">Status notification</string>
+    <string name="help_status_notification_body">The optional status notification can show the active profile, the next scheduled event, or that QuietSchedule is inactive. It can be enabled or disabled in Settings.</string>
+
+    <string name="help_privacy_title">Privacy</string>
+    <string name="help_privacy_body">QuietSchedule is designed to work locally. Does not require Internet access, location, files or external storage, calendar, Bluetooth, Wi-Fi, contacts access for DND sender rules, or a QuietSchedule account. No advertising, tracking, analytics, or telemetry is included.</string>
+
+    <string name="help_limits_title">Limitations</string>
+    <string name="help_limits_body">QuietSchedule does not support overnight ranges, generic automation actions, cloud synchronization, location-based rules, calendar integration, direct per-app silencing rules, or Exact Alarms as a requirement.</string>
+
+    <string name="help_development_title">How QuietSchedule was developed</string>
+    <string name="help_development_body">QuietSchedule was developed with artificial-intelligence assistance during analysis, design, and programming activities.
+        AI assistance was provided by ChatGPT, OpenAI GPT-5.6 Sol model, during development carried out in August 2026.
+        Functional decisions, device verification, testing, and final responsibility for the code remain with the project developer.</string>
+
+</resources>

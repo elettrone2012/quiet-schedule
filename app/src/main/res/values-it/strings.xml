@@ -8,6 +8,7 @@
     <string name="no_profiles_configured">Nessun profilo configurato</string>
     <string name="new_profile">Nuovo profilo</string>
     <string name="settings">Impostazioni</string>
+    <string name="app_version">Versione %1$s</string>
 
     <!-- DND access -->
     <string name="dnd_access_required">È necessario autorizzare l’accesso a Non disturbare.</string>
@@ -31,6 +32,10 @@
     <string name="profile_not_found">Profilo non trovato</string>
     <string name="profile_conflict">Conflitto con %1$s: %2$s %3$s-%4$s</string>
     <string name="schedule_conflict">Le fasce %1$d e %2$d si sovrappongono %3$s: %4$s-%5$s.</string>
+    <string name="unsaved_changes_title">Modifiche non salvate</string>
+    <string name="unsaved_changes_message">Le modifiche apportate non sono state salvate. Se esci verranno perse.</string>
+    <string name="discard_changes">Esci senza salvare</string>
+    <string name="continue_editing">Continua modifica</string>
 
     <!-- Schedule -->
     <string name="new_schedule">Nuova fascia</string>

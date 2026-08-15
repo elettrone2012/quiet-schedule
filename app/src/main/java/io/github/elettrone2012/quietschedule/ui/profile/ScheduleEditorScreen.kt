@@ -3,15 +3,18 @@ package io.github.elettrone2012.quietschedule.ui.profile
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -235,6 +238,9 @@ fun ScheduleEditorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(
+                    rememberScrollState()
+                )
                 .padding(16.dp),
             verticalArrangement =
                 Arrangement.spacedBy(16.dp)
@@ -247,36 +253,40 @@ fun ScheduleEditorScreen(
                     MaterialTheme.typography.titleMedium
             )
 
-            DayOfWeek.entries.forEach { day ->
-                Row(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                ) {
-                    Checkbox(
-                        checked =
-                            day in selectedDays,
-                        onCheckedChange = {
-                                checked ->
+            FlowRow(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.spacedBy(8.dp),
+                verticalArrangement =
+                    Arrangement.spacedBy(8.dp)
+            ) {
+                DayOfWeek.entries.forEach { day ->
 
+                    val selected =
+                        day in selectedDays
+
+                    FilterChip(
+                        selected = selected,
+                        onClick = {
                             selectedDays =
-                                if (checked) {
-                                    selectedDays + day
-                                } else {
+                                if (selected) {
                                     selectedDays - day
+                                } else {
+                                    selectedDays + day
                                 }
-                        }
-                    )
 
-                    Text(
-                        text =
-                            day.getDisplayName(
-                                TextStyle.FULL,
-                                locale
-                            ),
-                        modifier =
-                            Modifier.padding(
-                                top = 12.dp
+                            errorMessage = null
+                        },
+                        label = {
+                            Text(
+                                text =
+                                    day.getDisplayName(
+                                        TextStyle.SHORT,
+                                        locale
+                                    )
                             )
+                        }
                     )
                 }
             }
