@@ -7,8 +7,8 @@ QuietSchedule is a free and open-source Android application that automatically e
 It is intentionally focused on one task: making DND scheduling simple, predictable and transparent.
 
 <p align="center">
-  <img src="docs/screenshots/home-en.png" width="45%" alt="QuietSchedule Home - English" />
-  <img src="docs/screenshots/home-it.png" width="45%" alt="QuietSchedule Home - Italian" />
+  <img src="docs/screenshots/Home-EN.png" width="45%" alt="QuietSchedule Home - English" />
+  <img src="docs/screenshots/Home-IT.png" width="45%" alt="QuietSchedule Home - Italian" />
 </p>
 
 <p align="center">
