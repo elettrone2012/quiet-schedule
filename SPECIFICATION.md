@@ -1,852 +1,835 @@
-# QuietSchedule v0.1 — Functional Specification
+# QuietSchedule — Functional Specification
 
-## 1. App Purpose
-
-QuietSchedule is an open-source Android app that automatically enables and disables **Do Not Disturb (DND)** according to configurable weekly profiles.
-
-The goal is to keep the app simple, transparent, and focused on one task only: deciding **when** DND should be active.
-
-QuietSchedule does not manage Wi-Fi, mobile data, airplane mode, location, generic automation, or other system settings.
+> Current consolidated specification — updated through 16 August 2026.
 
 ---
 
-## 2. Profile Concept
+## 1. Purpose
 
-A **profile** is the main configuration unit available to the user.
+QuietSchedule is an open-source native Android application that automatically enables and disables **Do Not Disturb (DND)** according to configurable weekly profiles.
+
+The application is intentionally focused on deciding **when** DND should be active and which Android DND Priority exceptions should be allowed while a profile is active.
+
+QuietSchedule does not manage Wi-Fi, mobile data, airplane mode, location, generic automation, or unrelated system settings.
+
+---
+
+## 2. Platform and compatibility
+
+- Native Android application.
+- Kotlin.
+- Jetpack Compose.
+- Material 3.
+- Minimum supported Android version: **Android 11 / API 30**.
+- `minSdk = 30`.
+- English and Italian localization.
+- The app follows the Android system light/dark theme.
+- The app follows the Android system 12-hour / 24-hour time preference.
+
+Android 11 support should be retained while it does not create disproportionate implementation or maintenance complexity.
+
+---
+
+## 3. Profiles
+
+A profile is the main configuration unit.
 
 Each profile contains:
 
+- unique identifier;
 - name;
 - enabled/disabled state;
 - one or more weekly time ranges;
-- DND exception settings for Android Starred/Favorite contacts.
+- DND Priority exception settings.
 
-Example:
+An arbitrary number of profiles may be stored.
 
-```text
-Profile: Work
-Enabled: yes
+Multiple profiles may be enabled simultaneously only when their schedules do not overlap.
 
-Schedules:
-Mon-Fri 21:00 → 08:00
-
-Starred:
-Calls: no
-Messages: no
-```
-
-An arbitrary number of profiles may be saved.
-
-Multiple profiles may be enabled at the same time only if their schedules do not overlap.
+A duplicated profile always starts disabled.
 
 ---
 
-## 3. Enabled Profiles and Conflicts
+## 4. Weekly time ranges
 
-Profiles may be saved even if their schedules potentially conflict.
+Each profile contains one or more time ranges.
 
-Conflicts are checked only when a profile is enabled or when an already enabled profile is modified.
+A time range contains:
 
-Two enabled schedules must never overlap at the same time.
-
-Valid example:
-
-```text
-Work
-Mon-Fri 21:00 → 08:00
-ENABLED
-
-Vacation
-Every day 02:00 → 08:00
-DISABLED
-```
-
-`Vacation` may be saved, but it cannot be enabled while `Work` creates an overlapping interval.
-
-When a conflict occurs, the app must indicate:
-
-- the conflicting profile;
-- the day;
-- the overlapping time range.
-
----
-
-## 4. Time Ranges
-
-Each profile contains one or more **time ranges**.
-
-Individual time ranges do not have their own ON/OFF state.
-
-When a profile is enabled, all of its time ranges are considered active.
-
-Each time range contains:
-
-- one or more days of the week;
+- one or more selected days of the week;
 - start time;
 - end time.
 
 At least one day must be selected.
 
-`Start time = end time` is not allowed.
+Individual time ranges do not have their own enabled/disabled state. Enabling a profile enables all its configured ranges.
 
----
+### 4.1 Same-day only
 
-## 5. Time Range Interpretation
+QuietSchedule does **not** support overnight ranges.
 
-If:
+A range may end exactly at midnight. Internally, end-of-day is represented as `24:00`, while the UI follows the system time format and may display it as:
 
 ```text
-endTime > startTime
+00:00
 ```
 
-the time range ends on the same day.
+in 24-hour mode, or:
+
+```text
+12:00 AM
+```
+
+in 12-hour mode.
+
+Examples:
+
+```text
+08:00 -> 17:00   VALID
+00:00 -> 08:00   VALID
+22:00 -> 24:00   VALID
+22:00 -> 07:00   INVALID
+23:00 -> 22:00   INVALID
+08:00 -> 08:00   INVALID
+00:00 -> 24:00   INVALID
+```
+
+`00:00 -> 24:00` is intentionally rejected: full-day schedules are not supported.
+
+If multiple days are selected, the same same-day interval is repeated independently on each selected day.
 
 Example:
 
 ```text
-08:00 → 17:00
+Mon-Fri
+09:00 -> 17:00
 ```
 
-If:
+means Monday 09:00-17:00, Tuesday 09:00-17:00, and so on through Friday.
+
+### 4.2 Internal time representation
+
+Scheduling times are represented as integer minutes from the start of the day:
 
 ```text
-endTime < startTime
+00:00 = 0
+08:00 = 480
+22:00 = 1320
+24:00 = 1440
 ```
 
-the time range ends on the following day.
-
-Example:
+Rules:
 
 ```text
-22:00 → 07:00
+startMinute: 0..1439
+endMinute:   1..1440
+endMinute > startMinute
 ```
 
-means:
+`1440` is allowed only as the end of a range.
 
-```text
-Monday 22:00 → Tuesday 07:00
-```
+### 4.3 Interval semantics
 
-If multiple days are selected, the same time range is repeated for each selected day.
-
-Example:
-
-```text
-Mon-Sun
-22:00 → 07:00
-```
-
-means DND is active every night from 22:00 to 07:00.
-
-A time range such as:
-
-```text
-Mon-Sun
-23:00 → 22:00
-```
-
-produces 23 hours of DND per day, leaving only the 22:00–23:00 interval outside DND.
-
----
-
-## 6. Time Interval Model
-
-Internally, time ranges must be treated as half-open intervals:
+Internally, intervals are half-open:
 
 ```text
 [start, end)
 ```
 
-The start instant is included and the end instant is excluded.
+The start instant is included; the end instant is excluded.
 
-Therefore:
-
-```text
-Profile A: 06:00 → 08:00
-Profile B: 08:00 → 10:00
-```
-
-do not conflict.
-
-When multiple events occur at the same instant, QuietSchedule must first calculate the final desired state and only then modify DND.
-
-It must therefore avoid unnecessary sequences such as:
+Therefore these ranges are adjacent and do not conflict:
 
 ```text
-DND OFF
-DND ON
+A: 06:00 -> 08:00
+B: 08:00 -> 10:00
 ```
 
-when one time range ends at 08:00 and another begins at 08:00.
+At a midnight boundary, these ranges are also adjacent rather than overlapping:
+
+```text
+Monday  22:00 -> 24:00
+Tuesday 00:00 -> 08:00
+```
+
+When multiple scheduling events occur at the same instant, QuietSchedule calculates the final desired state before applying DND, avoiding unnecessary OFF/ON transitions.
 
 ---
 
-## 7. Enabling a Profile
+## 5. Conflicts
+
+Profiles may be saved even if their schedules would conflict with other profiles while disabled.
+
+Conflicts are enforced when:
+
+- enabling a profile;
+- saving changes to an already enabled profile.
+
+Two enabled profiles must never contain overlapping intervals on the same day.
+
+When activation or saving is rejected because of a conflict, the UI identifies at least:
+
+- conflicting profile;
+- day;
+- overlapping time interval.
+
+Within one profile, overlapping configured ranges are also rejected when saving the profile.
+
+Adjacent ranges are allowed.
+
+---
+
+## 6. Enabling a profile
 
 When the user enables a profile:
 
-1. QuietSchedule checks for conflicts with other enabled profiles.
-2. If a conflict exists, activation is rejected.
-3. If there are no conflicts, the profile is enabled.
-4. QuietSchedule immediately checks whether the current time falls inside one of its time ranges.
-5. If so, DND is enabled immediately.
+1. verify DND policy access;
+2. validate the profile configuration;
+3. check conflicts against all other enabled profiles;
+4. reject activation if invalid or conflicting;
+5. persist the enabled state;
+6. immediately evaluate whether the current local day/time is inside one of the profile ranges;
+7. calculate the final global QuietSchedule DND state;
+8. apply DND if required;
+9. recalculate future scheduling events;
+10. update the optional status notification.
 
-Example:
-
-```text
-Profile: Vacation
-02:00 → 08:00
-
-05:30 user enables profile
-05:30 QuietSchedule → DND ON
-```
+If the profile is enabled while already inside one of its ranges, DND is applied immediately.
 
 ---
 
-## 8. Disabling a Profile
+## 7. Disabling a profile
 
-If a profile is disabled while one of its time ranges is currently active:
+When a profile is disabled:
 
-```text
-QuietSchedule → DND OFF
-```
+1. persist the disabled state;
+2. calculate whether another enabled profile is currently active;
+3. apply the final desired DND state;
+4. recalculate future scheduling events;
+5. update the optional status notification.
 
-immediately.
-
-The future schedule is then recalculated.
-
----
-
-## 9. Manual DND Changes
-
-QuietSchedule does not try to distinguish between manual and automatic DND changes.
-
-It does not continuously monitor DND and does not attempt to override user actions.
-
-Its behavior is deterministic:
-
-```text
-START time range → DND ON
-END time range   → DND OFF
-```
-
-If the user manually changes DND during a time range, QuietSchedule does not intervene until the next scheduled event.
-
-Example:
-
-```text
-23:00 QuietSchedule → DND ON
-01:00 user          → DND OFF
-07:00 QuietSchedule → DND OFF
-```
-
-The 07:00 operation may be redundant, but it remains part of the scheduled behavior.
+DND must not be blindly switched OFF if another enabled profile is currently active.
 
 ---
 
-## 10. DND Exceptions Using Starred Contacts
+## 8. Manual DND changes
 
-QuietSchedule does not maintain its own contact list.
+QuietSchedule does not continuously monitor DND and does not try to determine whether a DND change was manual or automatic.
 
-It does not modify the user's contacts.
+At each QuietSchedule scheduling event, the application calculates and applies the desired state.
 
-It does not add or remove contacts from Android Favorites/Starred contacts.
+If the user changes DND manually between QuietSchedule events, QuietSchedule does not immediately override the user action.
 
-Each profile allows the user to decide whether **Android Starred/Favorite contacts** may bypass DND for:
+---
 
+## 9. DND mode and Priority exceptions
+
+QuietSchedule uses Android **Priority** interruption mode when DND is active.
+
+Each profile exposes the DND Priority options available in Android API 30.
+
+All exception options default to **OFF** for a new profile.
+
+### 9.1 Priority categories
+
+Supported categories:
+
+- alarms;
+- reminders;
+- events;
+- media;
+- system sounds;
+- repeat callers;
 - calls;
-- messages.
+- messages;
+- conversations.
 
-The two options are independent.
+### 9.2 Calls
 
-Possible combinations:
+When Calls is OFF, calls do not bypass DND because of the QuietSchedule policy.
 
-```text
-Calls NO
-Messages NO
-```
+When Calls is ON, the user chooses one sender scope:
 
-No exceptions.
+- anyone;
+- contacts;
+- starred contacts.
 
-```text
-Calls YES
-Messages NO
-```
+### 9.3 Messages
 
-Only calls from Starred contacts may bypass DND.
+When Messages is OFF, messages do not bypass DND because of the QuietSchedule policy.
 
-```text
-Calls NO
-Messages YES
-```
+When Messages is ON, the user chooses one sender scope:
 
-Only messages from Starred contacts may bypass DND.
+- anyone;
+- contacts;
+- starred contacts.
 
-```text
-Calls YES
-Messages YES
-```
+### 9.4 Conversations
 
-Calls and messages from Starred contacts may bypass DND.
+When Conversations is OFF, conversations do not bypass DND because of the QuietSchedule policy.
 
-QuietSchedule relies exclusively on DND functionality provided by Android.
+When Conversations is ON, the user chooses one conversation scope:
 
----
+- anyone;
+- important conversations.
 
-## 11. Device Reboot
+### 9.5 Remaining categories
 
-After the device restarts, QuietSchedule must:
+The following are independent boolean options, all default OFF:
 
-1. reload saved profiles;
-2. determine which profiles are enabled;
-3. recalculate the current scheduling state;
-4. if the current time falls inside an active time range, immediately apply DND;
-5. schedule the next events.
+- alarms;
+- reminders;
+- events;
+- media;
+- system sounds;
+- repeat callers.
 
-Example:
+### 9.6 Suppressed visual effects
 
-```text
-Profile: Night
-23:00 → 07:00
+QuietSchedule exposes the non-deprecated specific visual-effect suppression options available by API 30:
 
-03:00 device restarts
-03:02 QuietSchedule becomes available
-03:02 DND ON
-```
+- full-screen intents;
+- notification lights;
+- peek / heads-up presentation;
+- status-bar appearance;
+- notification badges;
+- ambient-display appearance;
+- notification-list appearance.
 
----
+Each option is independent and defaults OFF.
 
-## 12. Time, Time Zone, and Daylight Saving Changes
+The deprecated aggregate `SCREEN_ON` and `SCREEN_OFF` flags are not exposed.
 
-QuietSchedule must react to:
-
-- daylight saving time changes;
-- time zone changes;
-- manual date/time changes.
-
-After any of these events, it must recalculate schedules using the current local time.
-
-The behavior must be transparent to the user.
+QuietSchedule relies only on Android's standard DND/Notification Policy mechanisms. It does not maintain a contacts database and does not request contacts permission merely to configure Android sender scopes.
 
 ---
 
-## 13. Event Timing Precision
+## 10. Multiple enabled profiles and DND policy
 
-QuietSchedule **does not use Exact Alarms**.
+Enabled profiles cannot overlap in time.
 
-Android may therefore delay scheduled activation or deactivation by a few minutes, especially due to:
+Therefore, at any instant, at most one profile may be actively controlling DND.
 
-- Doze;
-- battery optimization;
-- device power management;
-- Android internal scheduling.
+This avoids having to merge DND exception policies from simultaneously active profiles.
 
-This limitation must be clearly documented.
-
-The goal is to avoid additional permissions and keep implementation simple.
+Adjacent profiles are allowed. At a shared boundary, the policy of the profile beginning at that instant becomes effective without an unnecessary intermediate DND OFF state.
 
 ---
 
-## 14. Permissions
+## 11. Device reboot
 
-QuietSchedule must request only the permissions strictly required for its operation.
+After device restart, QuietSchedule:
 
-In particular:
+1. reloads stored configuration;
+2. verifies relevant system permission state when execution resumes;
+3. determines enabled profiles;
+4. evaluates the current local day/time;
+5. applies the currently required DND state and profile policy;
+6. reconstructs future scheduling events;
+7. updates the optional status notification.
 
-- access to DND / Notification Policy control;
-- permissions required to restore schedules after device boot;
-- notification permission where required by the Android version.
+---
 
-The app must not request, unless explicitly justified by a future feature:
+## 12. Date, time zone and daylight-saving changes
+
+QuietSchedule reacts to relevant system changes including:
+
+- time-zone changes;
+- manual date/time changes;
+- daylight-saving transitions.
+
+After such a change, schedules are recalculated from the current local date/time.
+
+Weekly schedule definitions remain local wall-clock times.
+
+---
+
+## 13. Scheduling precision
+
+QuietSchedule does **not** require Exact Alarms.
+
+Scheduled activation/deactivation may therefore be delayed by Android because of mechanisms such as Doze, battery optimization, or power management.
+
+The application must not claim exact-to-the-minute execution when the platform does not guarantee it.
+
+Every relevant scheduling event recalculates the desired state from current persisted configuration and current local date/time rather than blindly applying stale event intent.
+
+---
+
+## 14. Permissions and privacy
+
+Request only permissions/access strictly required for the implemented functionality.
+
+Expected requirements include:
+
+- DND / Notification Policy access;
+- boot-related receiver support required to restore scheduling;
+- notification permission on Android versions where required, if status notifications are enabled.
+
+Do not request without a new explicit requirement:
 
 - contacts;
 - location;
-- files;
+- files/storage;
 - Internet;
 - Wi-Fi;
 - Bluetooth;
 - mobile data;
 - calendar.
 
-The app must not use:
+No:
 
+- advertising;
 - tracking;
 - analytics;
 - telemetry;
-- proprietary cloud services.
+- proprietary cloud service.
 
 ---
 
-## 15. DND Permission Revocation
+## 15. DND permission revocation
 
-If QuietSchedule detects that DND access is no longer available:
+If QuietSchedule detects that DND policy access is unavailable:
 
-1. all profiles are permanently set to `OFF`;
-2. no profile may be enabled until the permission is granted again;
+1. all profiles are persisted as disabled;
+2. no profile may be enabled until permission is granted again;
 3. continuous permission monitoring is not required;
-4. detecting the missing permission when the app is opened or during the next scheduled event is sufficient.
+4. detection when opening the app or at the next scheduled operation is sufficient;
+5. future scheduling is cancelled/rebuilt as appropriate;
+6. the UI informs the user.
 
-When the app is opened, a clear message must be displayed:
-
-```text
-Do Not Disturb permission is not available.
-
-All profiles have been disabled.
-Grant the permission before enabling them again.
-```
-
-When the permission is restored, profiles remain OFF.
-
-The user must enable them again manually.
+Restoring permission does not restore previous enabled states automatically.
 
 ---
 
-## 16. Data Persistence
+## 16. Persistence
 
-QuietSchedule uses **DataStore** to store locally:
+QuietSchedule uses Android **DataStore** for local application configuration.
+
+Persist at least:
 
 - profiles;
+- schedule ranges;
+- enabled states;
+- DND Priority exception settings;
+- global application settings.
+
+Persist domain configuration, not OS alarm identifiers as the source of truth.
+
+OS scheduling must be reconstructible from persisted application state.
+
+### 16.1 Schedule persistence format
+
+Current persisted schedules use minute-based fields:
+
+```text
+startMinute
+endMinute
+```
+
+Compatibility with previously persisted string-based `startTime` / `endTime` values is retained during migration.
+
+Old valid data is converted to the minute-based domain model when read.
+
+---
+
+## 17. Backup and device migration
+
+Maintain compatibility with standard Android application backup where practical.
+
+After restored application data becomes available on another device:
+
+1. validate restored data;
+2. check system permissions again;
+3. do not assume old scheduled OS events were transferred;
+4. reconstruct scheduling from persisted profiles.
+
+No proprietary backup service is used.
+
+---
+
+## 18. Main screen
+
+The main screen displays:
+
+- QuietSchedule application icon;
+- application name;
+- application version;
+- profile list;
+- enabled/disabled switch to the left of each profile;
+- profile name;
+- compact time-range summary;
+- actions for new profile, settings and help.
+
+Tapping a profile opens profile editing.
+
+Example:
+
+```text
+[ON]  Work
+      Mon-Fri 09:00 -> 17:00
+
+[OFF] Evening
+      Mon-Fri 18:00 -> 24:00
+```
+
+Displayed time follows the Android system 12/24-hour preference.
+
+---
+
+## 19. Profile editing
+
+The profile editor contains at least:
+
+- profile name;
+- list of time ranges;
+- add time range action;
+- DND Priority exception settings;
+- save action;
+- duplicate action;
+- delete action.
+
+Saving an enabled profile requires conflict validation before commit.
+
+A disabled profile may be saved even if it conflicts with another profile, but its own individual ranges must still be structurally valid and must not conflict with each other.
+
+Unsaved changes are detected. Leaving the editor with pending changes requires explicit confirmation before discarding them.
+
+---
+
+## 20. Time range editing
+
+The editor contains:
+
+- day-of-week selection;
+- start time;
+- end time;
+- save action;
+- delete action.
+
+Validation requirements:
+
+- at least one day selected;
+- `endMinute > startMinute`;
+- no overnight interval;
+- no zero-length interval;
+- no full-day `00:00 -> 24:00` interval.
+
+The native Material time picker follows the device's 12/24-hour setting.
+
+In 12-hour mode:
+
+```text
+12:00 AM = midnight
+12:00 PM = noon
+```
+
+When selected as the **end** time, midnight may represent end-of-day (`24:00` internally).
+
+---
+
+## 21. Profile deletion
+
+Deletion requires explicit confirmation.
+
+When deleting an enabled profile:
+
+1. remove it;
+2. recalculate the current desired DND state from remaining enabled profiles;
+3. apply the resulting state/policy;
+4. rebuild future scheduling;
+5. update the optional status notification.
+
+---
+
+## 22. Profile duplication
+
+Duplication copies:
+
 - time ranges;
-- ON/OFF state;
-- Starred call settings;
-- Starred message settings;
-- global settings.
+- all DND Priority exception settings;
+- other profile-specific properties.
 
-No QuietSchedule account is required.
+The duplicate always starts disabled.
 
-No proprietary cloud service is used.
+A generated name such as `Work (copy)` may be used.
 
----
-
-## 17. Backup and Device Migration
-
-Configurations should be compatible with Android's standard backup system.
-
-When restoring the app on a new device:
-
-1. app data is restored when available through Android backup;
-2. QuietSchedule checks system permissions again;
-3. scheduled events are reconstructed from profile data;
-4. alarms from the old device are not directly transferred.
+After duplication, open the new profile for editing.
 
 ---
 
-## 18. Main Screen
-
-The main screen displays the list of profiles.
-
-Example:
-
-```text
-QuietSchedule
-
-[x] Work
-    Mon-Fri 21:00 → 08:00
-
-[x] Weekend
-    Sat-Sun 23:00 → 10:00
-
-[ ] Vacation
-    Every day 02:00 → 08:00
-
-[ ] Business Trip
-    Tue-Wed-Thu 22:00 → 07:00
-
-[ + New profile ]
-```
-
-Each item displays:
-
-- name;
-- time range summary;
-- ON/OFF switch.
-
-Tapping a profile opens the profile edit screen.
-
----
-
-## 19. Profile Editing
-
-The profile edit screen contains at least:
-
-```text
-Profile name
-[Work]
-
-Time ranges
-- Mon-Fri 21:00 → 08:00
-
-[ + Add time range ]
-
-Starred exceptions
-[x] Calls
-[x] Messages
-
-[ Save ]
-```
-
-The profile name can be edited directly.
-
-Tapping a time range opens the time range edit screen.
-
----
-
-## 20. Time Range Editing
-
-The screen contains:
-
-```text
-Days
-
-[M] [T] [W] [T] [F] [S] [S]
-
-Start time
-21:00
-
-End time
-08:00
-
-[ Save time range ]
-```
-
-The user must also be able to delete the time range.
-
-Conflict detection does not prevent saving a disabled profile.
-
----
-
-## 21. Editing an Enabled Profile
-
-When an enabled profile is modified, QuietSchedule must check all conflicts before accepting the changes.
-
-If the new configuration creates a conflict:
-
-```text
-Save rejected
-```
-
-until the conflict is resolved.
-
----
-
-## 22. Profile Deletion
-
-Every profile deletion requires explicit confirmation.
-
-Example:
-
-```text
-Delete profile "Work"?
-
-This operation cannot be undone.
-
-[Cancel] [Delete]
-```
-
-If the deleted profile is currently controlling DND:
-
-1. DND is disabled;
-2. the profile is deleted;
-3. scheduling is recalculated.
-
----
-
-## 23. Profile Duplication
-
-A profile may be duplicated.
-
-The duplicate must contain:
-
-- all time ranges;
-- Starred call settings;
-- Starred message settings;
-- any other profile properties.
-
-The duplicate always starts as:
-
-```text
-OFF
-```
-
-to prevent immediate conflicts.
-
-The initial name may be:
-
-```text
-Work (copy)
-```
-
-After duplication, the new profile edit screen is opened automatically so the user may rename it.
-
----
-
-## 24. Status Notification
-
-QuietSchedule may display an optional persistent status notification.
+## 23. Optional status notification
 
 Global setting:
 
 ```text
-Show status notification
-ON / OFF
+Show status notification: ON/OFF
 ```
 
-If a time range is currently active:
+When active, the notification can show:
 
 ```text
 QuietSchedule
-Work — DND until 08:00
+Work - DND until 17:00
 ```
 
-If no time range is currently active but enabled profiles exist:
+When enabled profiles exist but none is currently active:
 
 ```text
 QuietSchedule
-Next event: Weekend, Saturday 23:00
+Next event: Work, Monday 09:00
 ```
 
-If no profile is enabled:
+When no profile is enabled:
 
 ```text
 QuietSchedule inactive
 ```
 
-Tapping the notification opens the app.
+Tapping the notification opens QuietSchedule.
 
-No quick actions are included in v0.1.
+No quick actions are included.
 
-The notification must not require a permanent foreground service unless this becomes technically necessary.
+No permanent foreground service is introduced solely as an architectural convenience.
 
 ---
 
-## 25. Global Settings
+## 24. Global settings
 
-Version 0.1 contains only one global setting:
+Current global setting:
 
 ```text
 Show status notification
 ```
 
-No unnecessary configuration options should be added.
+Do not add configuration options without an explicit functional requirement.
 
 ---
 
-## 26. Language, Time Format, and Theme
+## 25. Localization, time format and theme
 
 Initial languages:
 
 - English;
 - Italian.
 
-The displayed time format must automatically follow the Android system preference:
+Displayed time format follows Android system preference:
 
-```text
-21:00 → 08:00
-```
+- 24-hour mode, for example `22:00 -> 00:00`;
+- 12-hour mode, for example `10:00 PM -> 12:00 AM`.
 
-or:
+Theme follows Android system light/dark theme.
 
-```text
-9:00 PM → 8:00 AM
-```
-
-The theme must automatically follow Android:
-
-- light;
-- dark.
-
-QuietSchedule must not duplicate these system settings inside the app.
+QuietSchedule does not duplicate these system preferences in its own settings.
 
 ---
 
-# Technical Requirements
+## 26. Help and user guidance
 
-## Platform
+The built-in guide documents at least:
 
-- Native Android
-- Minimum Android version: **Android 11 / API 30**
-- Kotlin
-- Jetpack Compose
+- purpose of QuietSchedule;
+- first-launch permissions;
+- Android 11 / API 30 minimum compatibility;
+- profiles;
+- time ranges;
+- midnight/end-of-day behavior;
+- conflicts;
+- DND Priority exceptions;
+- calls/messages/conversations;
+- third-party app limitations;
+- notification visual effects;
+- manual DND changes;
+- reboot/time-zone/time-change behavior;
+- scheduling precision;
+- status notification;
+- privacy;
+- current product limitations;
+- development assistance disclosure.
 
-Android 11 support must be maintained only as long as it does not significantly increase implementation or maintenance complexity.
-
-If a future feature would require substantial complexity to retain Android 11 compatibility, either the feature or the minimum Android version must be reconsidered.
-
----
-
-## Architecture
-
-The architecture should remain simple and readable.
-
-Suggested structure:
+The guide explicitly explains that:
 
 ```text
-QuietSchedule
-
-UI
-├── Home
-├── ProfileEdit
-├── ScheduleEdit
-└── Settings
-
-Domain
-├── Profile
-├── Schedule
-├── ConflictChecker
-└── ScheduleCalculator
-
-Data
-└── DataStore
-
-Android
-├── DndController
-├── ScheduleManager
-├── Alarm/Event Receiver
-├── BootReceiver
-└── TimeChangeReceiver
+10:00 PM -> 12:00 AM
 ```
 
-Avoid architectural layers that provide no concrete value.
+is a valid same-day range ending at midnight, while:
+
+```text
+10:00 PM -> 8:00 AM
+```
+
+is an unsupported overnight range.
 
 ---
 
-## Conceptual Data Model
+## 27. Distribution and product principles
+
+Planned/current distribution model:
+
+1. GitHub repository and GitHub Releases;
+2. F-Droid later.
+
+License:
+
+```text
+MIT
+```
+
+Design priorities:
+
+1. simplicity;
+2. deterministic behavior;
+3. readable code;
+4. minimal permissions;
+5. no external service dependency;
+6. transparency;
+7. F-Droid compatibility;
+8. no ads;
+9. no tracking;
+10. open-source implementation.
+
+---
+
+# Technical baseline
+
+## Domain model
+
+Conceptual model:
 
 ```text
 Profile
 ├── id
 ├── name
 ├── enabled
-├── allowStarredCalls
-├── allowStarredMessages
+├── dndPolicy
 └── schedules[]
 ```
 
 ```text
 Schedule
-├── id
 ├── daysOfWeek
-├── startTime
-└── endTime
+├── startMinute
+└── endMinute
 ```
 
-Final class names may be changed during implementation.
+Hard Schedule invariants:
+
+```text
+daysOfWeek is not empty
+startMinute in 0..1439
+endMinute in 1..1440
+endMinute > startMinute
+not (startMinute == 0 and endMinute == 1440)
+```
+
+Do not add an `isOvernight` property.
+
+Do not normalize or silently split an invalid overnight schedule.
 
 ---
 
-# Mandatory Minimum Tests
+## Scheduling
 
-Time calculation logic must be testable independently from Android.
+No Exact Alarm requirement.
 
-Unit tests must cover at least:
+Implementation must be resilient to delayed execution.
 
-1. same-day time range:
+Recalculate after:
 
-```text
-08:00 → 17:00
-```
+- boot;
+- date/time change;
+- time-zone change;
+- relevant scheduling event;
+- profile enable/disable/edit/delete.
 
-2. overnight time range:
-
-```text
-22:00 → 07:00
-```
-
-3. every-day schedule:
-
-```text
-23:00 → 22:00
-```
-
-4. adjacent time ranges:
-
-```text
-A ends at 08:00
-B starts at 08:00
-```
-
-5. conflict between enabled profiles;
-
-6. conflicting disabled profile that remains saveable;
-
-7. enabling a profile while already inside one of its time ranges;
-
-8. disabling a profile while inside one of its time ranges;
-
-9. editing an enabled profile;
-
-10. deleting an enabled profile;
-
-11. duplicating a profile;
-
-12. daylight saving time change;
-
-13. time zone change;
-
-14. reboot during an active time range;
-
-15. reboot outside an active time range;
-
-16. DND permission revoked;
-
-17. Starred exceptions:
-    - none;
-    - calls only;
-    - messages only;
-    - calls + messages;
-
-18. backup/restore;
-
-19. status notification ON/OFF;
-
-20. system 12/24-hour format;
-
-21. light/dark theme;
-
-22. English/Italian localization.
+An end boundary at `1440` is scheduled as `00:00` at the start of the following calendar day.
 
 ---
 
-# Design Principles
+## Persistence
 
-QuietSchedule must prioritize:
+Use DataStore.
 
-1. simplicity;
-2. predictable behavior;
-3. readable code;
-4. minimal permissions;
-5. no dependency on external services;
-6. transparency toward the user;
-7. F-Droid compatibility;
-8. no advertising;
-9. no tracking;
-10. fully open-source code.
+Persist domain configuration, not OS alarm identifiers.
 
-Every new feature must be evaluated against these principles.
-
-If a feature requires invasive workarounds, excessive permissions, or a significant increase in complexity, it must be excluded from v0.1.
+Backward compatibility with previously persisted string time fields should be retained while migration is relevant.
 
 ---
 
-# License and Distribution
+## UI principles
 
-Planned license:
+Compose UI should operate on immutable UI/domain state where practical.
 
-**MIT License**
+Validation errors must be explicit, especially:
 
-Public GitHub repository.
+- no day selected;
+- `endMinute <= startMinute`;
+- unsupported full-day range;
+- conflict on enable/save of an enabled profile.
 
-Planned distribution:
-
-1. GitHub Releases;
-2. F-Droid at a later stage.
+Do not silently reinterpret `22:00 -> 07:00` as an overnight interval.
 
 ---
 
-# v0.1 Goal
+# Minimum acceptance tests
 
-QuietSchedule v0.1 must do one thing:
+At minimum verify:
 
-> **Automatically enable and disable Do Not Disturb according to simple and predictable weekly profiles.**
+1. accept `08:00 -> 17:00`;
+2. accept `00:00 -> 08:00`;
+3. accept `22:00 -> 24:00`;
+4. reject `22:00 -> 07:00`;
+5. reject `08:00 -> 08:00`;
+6. reject `00:00 -> 24:00`;
+7. reject a range with no selected day;
+8. accept one range applied to multiple selected days;
+9. start is inclusive;
+10. end is exclusive;
+11. adjacent ranges do not conflict;
+12. conflicts between enabled profiles are rejected;
+13. disabled profiles may be saved even if they conflict with enabled profiles;
+14. internal conflicts inside one profile are rejected;
+15. `22:00 -> 24:00` remains active at `23:59`;
+16. its END event occurs at `00:00` on the following calendar day;
+17. Monday `22:00 -> 24:00` and Tuesday `00:00 -> 08:00` are adjacent and do not conflict;
+18. persisted `endMinute = 1440` round-trips correctly;
+19. legacy persisted string times migrate correctly;
+20. DND Priority API-30 categories map correctly;
+21. missing DND policy access disables persisted profiles;
+22. reboot reconstructs current state and future scheduling;
+23. time-zone/manual-time/DST changes trigger recalculation;
+24. status notification setting persists;
+25. Android 11 is supported;
+26. Android system 12/24-hour format is respected;
+27. light/dark system theme is respected;
+28. English localization works;
+29. Italian localization works;
+30. no contacts, location, storage, Internet, analytics or telemetry permissions/features are introduced.
 
-It must not become a generic Android automation platform.
+---
+
+# Non-goals
+
+Do not add unless explicitly approved:
+
+- overnight schedules;
+- full-day schedules;
+- generic automation actions;
+- network/cloud synchronization;
+- analytics/telemetry;
+- custom contact management;
+- calendar integration;
+- location-based rules;
+- exact alarms;
+- foreground service solely as an architectural convenience.
+
+---
+
+# Product goal
+
+QuietSchedule does one thing:
+
+> Automatically enable and disable Android Do Not Disturb according to simple, predictable, same-day weekly profiles.
+
+It is not a generic automation application.
