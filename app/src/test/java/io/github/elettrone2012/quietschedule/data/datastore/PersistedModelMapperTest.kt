@@ -9,10 +9,9 @@ import io.github.elettrone2012.quietschedule.domain.model.SenderCategory
 import io.github.elettrone2012.quietschedule.domain.model.SenderScope
 import io.github.elettrone2012.quietschedule.domain.model.SuppressedVisualEffects
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.DayOfWeek
-import java.time.LocalTime
-import org.junit.Assert.assertTrue
 
 class PersistedModelMapperTest {
 
@@ -58,8 +57,8 @@ class PersistedModelMapperTest {
                         DayOfWeek.TUESDAY,
                         DayOfWeek.WEDNESDAY
                     ),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 30)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60 + 30
                 )
             )
         )
@@ -79,14 +78,18 @@ class PersistedModelMapperTest {
             enabled = false,
             schedules = listOf(
                 Schedule(
-                    daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(12, 0)
+                    daysOfWeek = setOf(
+                        DayOfWeek.MONDAY
+                    ),
+                    startMinute = 8 * 60,
+                    endMinute = 12 * 60
                 ),
                 Schedule(
-                    daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(13, 0),
-                    endTime = LocalTime.of(17, 0)
+                    daysOfWeek = setOf(
+                        DayOfWeek.MONDAY
+                    ),
+                    startMinute = 13 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -120,9 +123,11 @@ class PersistedModelMapperTest {
             ),
             schedules = listOf(
                 Schedule(
-                    daysOfWeek = setOf(DayOfWeek.FRIDAY),
-                    startTime = LocalTime.of(18, 0),
-                    endTime = LocalTime.of(22, 0)
+                    daysOfWeek = setOf(
+                        DayOfWeek.FRIDAY
+                    ),
+                    startMinute = 18 * 60,
+                    endMinute = 22 * 60
                 )
             )
         )
@@ -131,11 +136,97 @@ class PersistedModelMapperTest {
             .toPersisted()
             .toDomain()
 
-        assertEquals(SenderScope.STARRED, restored.dndPolicy.calls.sender)
-        assertEquals(SenderScope.CONTACTS, restored.dndPolicy.messages.sender)
+        assertEquals(
+            SenderScope.STARRED,
+            restored.dndPolicy.calls.sender
+        )
+
+        assertEquals(
+            SenderScope.CONTACTS,
+            restored.dndPolicy.messages.sender
+        )
+
         assertEquals(
             ConversationScope.IMPORTANT,
             restored.dndPolicy.conversations.sender
+        )
+    }
+
+    @Test
+    fun midnightEndRoundTripPreserves1440() {
+        val original = Profile(
+            id = "midnight",
+            name = "Evening",
+            enabled = false,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(
+                        DayOfWeek.MONDAY
+                    ),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val persisted =
+            original.toPersisted()
+
+        val persistedSchedule =
+            persisted.schedules.single()
+
+        assertEquals(
+            22 * 60,
+            persistedSchedule.startMinute
+        )
+
+        assertEquals(
+            Schedule.MINUTES_PER_DAY,
+            persistedSchedule.endMinute
+        )
+
+        val restored =
+            persisted.toDomain()
+
+        assertEquals(
+            original,
+            restored
+        )
+    }
+
+    @Test
+    fun legacyStringTimesAreMigratedToMinuteModel() {
+        val persisted = PersistedProfile(
+            id = "legacy",
+            name = "Legacy",
+            enabled = false,
+            dndPolicy = PersistedDndPolicy(),
+            schedules = listOf(
+                PersistedSchedule(
+                    daysOfWeek =
+                        listOf("MONDAY"),
+                    startTime =
+                        "09:00",
+                    endTime =
+                        "17:30"
+                )
+            )
+        )
+
+        val restored =
+            persisted.toDomain()
+
+        val schedule =
+            restored.schedules.single()
+
+        assertEquals(
+            9 * 60,
+            schedule.startMinute
+        )
+
+        assertEquals(
+            17 * 60 + 30,
+            schedule.endMinute
         )
     }
 
@@ -148,9 +239,12 @@ class PersistedModelMapperTest {
             dndPolicy = PersistedDndPolicy(),
             schedules = listOf(
                 PersistedSchedule(
-                    daysOfWeek = listOf("NOT_A_DAY"),
-                    startTime = "09:00",
-                    endTime = "17:00"
+                    daysOfWeek =
+                        listOf("NOT_A_DAY"),
+                    startMinute =
+                        9 * 60,
+                    endMinute =
+                        17 * 60
                 )
             )
         )
@@ -159,11 +253,13 @@ class PersistedModelMapperTest {
             persisted.toDomain()
         }
 
-        assertTrue(result.isFailure)
+        assertTrue(
+            result.isFailure
+        )
     }
 
     @Test
-    fun invalidTimeIsRejected() {
+    fun invalidLegacyTimeIsRejected() {
         val persisted = PersistedProfile(
             id = "broken-time",
             name = "Broken",
@@ -171,9 +267,12 @@ class PersistedModelMapperTest {
             dndPolicy = PersistedDndPolicy(),
             schedules = listOf(
                 PersistedSchedule(
-                    daysOfWeek = listOf("MONDAY"),
-                    startTime = "INVALID",
-                    endTime = "17:00"
+                    daysOfWeek =
+                        listOf("MONDAY"),
+                    startTime =
+                        "INVALID",
+                    endTime =
+                        "17:00"
                 )
             )
         )
@@ -182,11 +281,13 @@ class PersistedModelMapperTest {
             persisted.toDomain()
         }
 
-        assertTrue(result.isFailure)
+        assertTrue(
+            result.isFailure
+        )
     }
 
     @Test
-    fun overnightPersistedScheduleIsRejectedByDomainInvariant() {
+    fun overnightLegacyPersistedScheduleIsRejectedByDomainInvariant() {
         val persisted = PersistedProfile(
             id = "overnight",
             name = "Broken",
@@ -194,9 +295,12 @@ class PersistedModelMapperTest {
             dndPolicy = PersistedDndPolicy(),
             schedules = listOf(
                 PersistedSchedule(
-                    daysOfWeek = listOf("MONDAY"),
-                    startTime = "22:00",
-                    endTime = "07:00"
+                    daysOfWeek =
+                        listOf("MONDAY"),
+                    startTime =
+                        "22:00",
+                    endTime =
+                        "07:00"
                 )
             )
         )
@@ -205,6 +309,36 @@ class PersistedModelMapperTest {
             persisted.toDomain()
         }
 
-        assertTrue(result.isFailure)
+        assertTrue(
+            result.isFailure
+        )
+    }
+
+    @Test
+    fun invalidNewFormatRangeIsRejectedByDomainInvariant() {
+        val persisted = PersistedProfile(
+            id = "invalid-new-format",
+            name = "Broken",
+            enabled = false,
+            dndPolicy = PersistedDndPolicy(),
+            schedules = listOf(
+                PersistedSchedule(
+                    daysOfWeek =
+                        listOf("MONDAY"),
+                    startMinute =
+                        22 * 60,
+                    endMinute =
+                        7 * 60
+                )
+            )
+        )
+
+        val result = runCatching {
+            persisted.toDomain()
+        }
+
+        assertTrue(
+            result.isFailure
+        )
     }
 }

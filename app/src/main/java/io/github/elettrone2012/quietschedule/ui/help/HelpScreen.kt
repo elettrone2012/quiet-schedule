@@ -49,7 +49,10 @@ fun HelpScreen(
         HelpSection(R.string.help_status_notification_title, R.string.help_status_notification_body),
         HelpSection(R.string.help_privacy_title, R.string.help_privacy_body),
         HelpSection(R.string.help_limits_title, R.string.help_limits_body),
-        HelpSection(R.string.help_development_title,R.string.help_development_body)
+        HelpSection(
+            R.string.help_compatibility_title,
+            R.string.help_compatibility_body
+        ),HelpSection(R.string.help_development_title,R.string.help_development_body)
     )
 
     Scaffold(

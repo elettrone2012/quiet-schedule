@@ -73,8 +73,8 @@ class QuietScheduleCoordinatorTest {
                     schedules = listOf(
                         Schedule(
                             daysOfWeek = setOf(DayOfWeek.MONDAY),
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
+                            startMinute = 9 * 60,
+                            endMinute = 17 * 60
                         )
                     )
                 )
@@ -111,8 +111,8 @@ class QuietScheduleCoordinatorTest {
                     schedules = listOf(
                         Schedule(
                             daysOfWeek = setOf(DayOfWeek.MONDAY),
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
+                            startMinute = 9 * 60,
+                            endMinute = 17 * 60
                         )
                     )
                 )
@@ -148,8 +148,8 @@ class QuietScheduleCoordinatorTest {
                     schedules = listOf(
                         Schedule(
                             daysOfWeek = setOf(DayOfWeek.MONDAY),
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
+                            startMinute = 9 * 60,
+                            endMinute = 17 * 60
                         )
                     )
                 )
@@ -174,6 +174,62 @@ class QuietScheduleCoordinatorTest {
 
         assertEquals(
             LocalDateTime.of(2026, 8, 10, 9, 0),
+            scheduling.scheduledEvent?.dateTime
+        )
+    }
+
+    @Test
+    fun midnightEndScheduleRemainsActiveAndEndsNextDayAtMidnight() = runTest {
+        val repository = FakeRepository(
+            initialProfiles = listOf(
+                Profile(
+                    id = "evening",
+                    name = "Evening",
+                    enabled = true,
+                    schedules = listOf(
+                        Schedule(
+                            daysOfWeek = setOf(DayOfWeek.MONDAY),
+                            startMinute = 22 * 60,
+                            endMinute = Schedule.MINUTES_PER_DAY
+                        )
+                    )
+                )
+            )
+        )
+
+        val dnd = FakeDndGateway(
+            policyAccess = true
+        )
+
+        val scheduling = FakeSchedulingGateway()
+
+        val coordinator = QuietScheduleCoordinator(
+            repository = repository,
+            dndGateway = dnd,
+            schedulingGateway = scheduling
+        )
+
+        coordinator.reconcile(
+            LocalDateTime.of(
+                2026,
+                8,
+                10,
+                23,
+                30
+            )
+        )
+
+        assertTrue(dnd.priorityModeApplied)
+        assertFalse(dnd.dndDisabled)
+
+        assertEquals(
+            LocalDateTime.of(
+                2026,
+                8,
+                11,
+                0,
+                0
+            ),
             scheduling.scheduledEvent?.dateTime
         )
     }
@@ -277,8 +333,8 @@ class QuietScheduleCoordinatorTest {
                     schedules = listOf(
                         Schedule(
                             daysOfWeek = setOf(DayOfWeek.MONDAY),
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
+                            startMinute = 9 * 60,
+                            endMinute = 17 * 60
                         )
                     )
                 )
@@ -320,8 +376,8 @@ class QuietScheduleCoordinatorTest {
                     schedules = listOf(
                         Schedule(
                             daysOfWeek = setOf(DayOfWeek.MONDAY),
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
+                            startMinute = 9 * 60,
+                            endMinute = 17 * 60
                         )
                     )
                 )
@@ -375,10 +431,10 @@ class QuietScheduleCoordinatorTest {
                             Schedule(
                                 daysOfWeek =
                                     setOf(DayOfWeek.MONDAY),
-                                startTime =
-                                    LocalTime.of(9, 0),
-                                endTime =
-                                    LocalTime.of(17, 0)
+                                startMinute =
+                                    9 * 60,
+                                endMinute =
+                                    17 * 60
                             )
                         )
                     )
@@ -438,10 +494,10 @@ class QuietScheduleCoordinatorTest {
                             Schedule(
                                 daysOfWeek =
                                     setOf(DayOfWeek.MONDAY),
-                                startTime =
-                                    LocalTime.of(9, 0),
-                                endTime =
-                                    LocalTime.of(17, 0)
+                                startMinute =
+                                    9 * 60,
+                                endMinute =
+                                    17 * 60
                             )
                         )
                     )

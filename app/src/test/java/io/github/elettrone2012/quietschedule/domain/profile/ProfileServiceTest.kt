@@ -1,5 +1,6 @@
 package io.github.elettrone2012.quietschedule.domain.profile
 
+import io.github.elettrone2012.quietschedule.domain.model.DndPolicy
 import io.github.elettrone2012.quietschedule.domain.model.Profile
 import io.github.elettrone2012.quietschedule.domain.model.Schedule
 import org.junit.Assert.assertEquals
@@ -7,8 +8,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.DayOfWeek
-import java.time.LocalTime
-import io.github.elettrone2012.quietschedule.domain.model.DndPolicy
 
 class ProfileServiceTest {
 
@@ -21,8 +20,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -49,8 +48,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -62,8 +61,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -95,8 +94,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -108,8 +107,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(18, 0),
-                    endTime = LocalTime.of(22, 0)
+                    startMinute = 18 * 60,
+                    endMinute = 22 * 60
                 )
             )
         )
@@ -143,8 +142,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -166,8 +165,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -179,8 +178,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(18, 0),
-                    endTime = LocalTime.of(22, 0)
+                    startMinute = 18 * 60,
+                    endMinute = 22 * 60
                 )
             )
         )
@@ -199,6 +198,7 @@ class ProfileServiceTest {
         assertFalse(updatedWork.enabled)
         assertTrue(updatedEvening.enabled)
     }
+
     @Test
     fun duplicateProfileCopiesConfigurationAndStartsDisabled() {
         val source = Profile(
@@ -211,8 +211,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -254,8 +254,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -267,8 +267,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(18, 0),
-                    endTime = LocalTime.of(22, 0)
+                    startMinute = 18 * 60,
+                    endMinute = 22 * 60
                 )
             )
         )
@@ -300,6 +300,7 @@ class ProfileServiceTest {
 
         assertEquals(original, updatedProfiles)
     }
+
     @Test
     fun disabledProfileCanBeSavedWithConflict() {
         val original = Profile(
@@ -309,8 +310,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -322,8 +323,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -349,8 +350,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(10, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 10 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -362,8 +363,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -372,8 +373,8 @@ class ProfileServiceTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -384,6 +385,88 @@ class ProfileServiceTest {
         )
 
         assertTrue(result is SaveProfileResult.Conflict)
+    }
+
+    @Test
+    fun enableProfileAcceptsAdjacentMidnightBoundary() {
+        val mondayEvening = Profile(
+            id = "evening",
+            name = "Evening",
+            enabled = false,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val tuesdayMorning = Profile(
+            id = "morning",
+            name = "Morning",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.TUESDAY),
+                    startMinute = 0,
+                    endMinute = 8 * 60
+                )
+            )
+        )
+
+        val result = enableProfile(
+            profileId = "evening",
+            profiles = listOf(
+                mondayEvening,
+                tuesdayMorning
+            )
+        )
+
+        assertTrue(
+            result is EnableProfileResult.Success
+        )
+    }
+
+    @Test
+    fun enableProfileRejectsConflictBeforeMidnight() {
+        val evening = Profile(
+            id = "evening",
+            name = "Evening",
+            enabled = false,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val late = Profile(
+            id = "late",
+            name = "Late",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 23 * 60,
+                    endMinute = 23 * 60 + 30
+                )
+            )
+        )
+
+        val result = enableProfile(
+            profileId = "evening",
+            profiles = listOf(
+                evening,
+                late
+            )
+        )
+
+        assertTrue(
+            result is EnableProfileResult.Conflict
+        )
     }
 
     @Test
@@ -400,7 +483,9 @@ class ProfileServiceTest {
             profiles = emptyList()
         )
 
-        assertTrue(result is SaveProfileResult.ProfileNotFound)
+        assertTrue(
+            result is SaveProfileResult.ProfileNotFound
+        )
     }
 
     @Test
@@ -420,9 +505,12 @@ class ProfileServiceTest {
             )
         )
 
-        val updated = disableAllProfiles(profiles)
+        val updated =
+            disableAllProfiles(profiles)
 
-        assertTrue(updated.all { !it.enabled })
+        assertTrue(
+            updated.all { !it.enabled }
+        )
     }
 
     @Test
@@ -434,11 +522,14 @@ class ProfileServiceTest {
             schedules = emptyList()
         )
 
-        val updated = disableAllProfiles(listOf(profile))
+        val updated =
+            disableAllProfiles(
+                listOf(profile)
+            )
 
-        assertEquals(listOf(profile), updated)
+        assertEquals(
+            listOf(profile),
+            updated
+        )
     }
-
-
-
 }

@@ -11,8 +11,8 @@ class ScheduleActivityTest {
 
     private val schedule = Schedule(
         daysOfWeek = setOf(DayOfWeek.MONDAY),
-        startTime = LocalTime.of(8, 0),
-        endTime = LocalTime.of(10, 0)
+        startMinute = 8 * 60,
+        endMinute = 10 * 60
     )
 
     @Test
@@ -51,6 +51,38 @@ class ScheduleActivityTest {
             schedule.isActiveAt(
                 dayOfWeek = DayOfWeek.TUESDAY,
                 time = LocalTime.of(9, 0)
+            )
+        )
+    }
+
+    @Test
+    fun scheduleEndingAtMidnightIsActiveAt2359() {
+        val evening = Schedule(
+            daysOfWeek = setOf(DayOfWeek.MONDAY),
+            startMinute = 22 * 60,
+            endMinute = Schedule.MINUTES_PER_DAY
+        )
+
+        assertTrue(
+            evening.isActiveAt(
+                dayOfWeek = DayOfWeek.MONDAY,
+                time = LocalTime.of(23, 59)
+            )
+        )
+    }
+
+    @Test
+    fun scheduleEndingAtMidnightIsNotActiveNextDay() {
+        val evening = Schedule(
+            daysOfWeek = setOf(DayOfWeek.MONDAY),
+            startMinute = 22 * 60,
+            endMinute = Schedule.MINUTES_PER_DAY
+        )
+
+        assertFalse(
+            evening.isActiveAt(
+                dayOfWeek = DayOfWeek.TUESDAY,
+                time = LocalTime.MIDNIGHT
             )
         )
     }

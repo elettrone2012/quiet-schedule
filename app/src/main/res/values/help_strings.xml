@@ -13,7 +13,7 @@
     <string name="help_profiles_body">A profile contains a name, one or more weekly time ranges, DND exception settings, and an enabled/disabled state. Changes are committed only when you save the profile. If you try to leave with unsaved changes, QuietSchedule warns you before discarding them. Duplicated profiles start disabled. Deleting a profile requires confirmation.</string>
 
     <string name="help_schedules_title">Time ranges</string>
-    <string name="help_schedules_body">Each time range contains one or more days, a start time, and an end time. QuietSchedule does not support overnight ranges: the end time must always be later than the start time on the same day. For example, 08:00 → 17:00 is valid, while 22:00 → 07:00 and 08:00 → 08:00 are invalid. Adjacent ranges such as 06:00 → 08:00 and 08:00 → 10:00 do not conflict.</string>
+    <string name="help_schedules_body">Each time range contains one or more days, a start time, and an end time. QuietSchedule does not support overnight ranges. A range may end exactly at midnight: for example, 22:00 → 00:00 means from 22:00 until the end of the same day. In 12-hour format, midnight is displayed as 12:00 AM, so 10:00 PM → 12:00 AM is valid. A range such as 10:00 PM → 8:00 AM is still invalid because it crosses into the next day. Zero-length ranges such as 08:00 → 08:00 are invalid. Adjacent ranges such as 06:00 → 08:00 and 08:00 → 10:00 do not conflict.</string>
 
     <string name="help_conflicts_title">Conflicts between profiles</string>
     <string name="help_conflicts_body">Two enabled profiles cannot overlap on the same day. A disabled profile may be saved even if it would conflict. Conflicts are enforced when enabling a profile or saving changes to an already enabled profile.</string>
@@ -50,6 +50,9 @@
 
     <string name="help_limits_title">Limitations</string>
     <string name="help_limits_body">QuietSchedule does not support overnight ranges, generic automation actions, cloud synchronization, location-based rules, calendar integration, direct per-app silencing rules, or Exact Alarms as a requirement.</string>
+
+    <string name="help_compatibility_title">Compatibility</string>
+    <string name="help_compatibility_body">QuietSchedule requires Android 11 (API 30) or later. The app follows the device system language, light or dark theme, and 12-hour or 24-hour time format.</string>
 
     <string name="help_development_title">How QuietSchedule was developed</string>
     <string name="help_development_body">QuietSchedule was developed with artificial-intelligence assistance during analysis, design, and programming activities.

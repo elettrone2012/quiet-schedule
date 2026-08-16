@@ -5,7 +5,6 @@ import io.github.elettrone2012.quietschedule.domain.model.Schedule
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.DayOfWeek
-import java.time.LocalTime
 
 class ProfileValidationTest {
 
@@ -17,8 +16,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -29,8 +28,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -40,7 +39,9 @@ class ProfileValidationTest {
             otherProfiles = listOf(otherProfile)
         )
 
-        assertTrue(result is ProfileValidationResult.Conflict)
+        assertTrue(
+            result is ProfileValidationResult.Conflict
+        )
     }
 
     @Test
@@ -51,8 +52,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -63,8 +64,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(18, 0),
-                    endTime = LocalTime.of(22, 0)
+                    startMinute = 18 * 60,
+                    endMinute = 22 * 60
                 )
             )
         )
@@ -74,7 +75,9 @@ class ProfileValidationTest {
             otherProfiles = listOf(otherProfile)
         )
 
-        assertTrue(result is ProfileValidationResult.Valid)
+        assertTrue(
+            result is ProfileValidationResult.Valid
+        )
     }
 
     @Test
@@ -85,8 +88,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -97,8 +100,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -108,7 +111,9 @@ class ProfileValidationTest {
             otherProfiles = listOf(otherProfile)
         )
 
-        assertTrue(result is ProfileValidationResult.Valid)
+        assertTrue(
+            result is ProfileValidationResult.Valid
+        )
     }
 
     @Test
@@ -119,8 +124,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -131,8 +136,8 @@ class ProfileValidationTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -142,7 +147,44 @@ class ProfileValidationTest {
             otherProfiles = listOf(otherProfile)
         )
 
-        assertTrue(result is ProfileValidationResult.Conflict)
+        assertTrue(
+            result is ProfileValidationResult.Conflict
+        )
     }
 
+    @Test
+    fun midnightBoundaryOnDifferentDaysDoesNotConflict() {
+        val profile = Profile(
+            name = "Monday evening",
+            enabled = false,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val otherProfile = Profile(
+            name = "Tuesday morning",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.TUESDAY),
+                    startMinute = 0,
+                    endMinute = 8 * 60
+                )
+            )
+        )
+
+        val result = validateProfileForEnable(
+            profile = profile,
+            otherProfiles = listOf(otherProfile)
+        )
+
+        assertTrue(
+            result is ProfileValidationResult.Valid
+        )
+    }
 }

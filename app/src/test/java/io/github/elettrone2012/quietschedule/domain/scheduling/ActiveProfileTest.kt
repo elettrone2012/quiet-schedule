@@ -18,8 +18,8 @@ class ActiveProfileTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -30,8 +30,8 @@ class ActiveProfileTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(18, 0),
-                    endTime = LocalTime.of(22, 0)
+                    startMinute = 18 * 60,
+                    endMinute = 22 * 60
                 )
             )
         )
@@ -42,7 +42,10 @@ class ActiveProfileTest {
             time = LocalTime.of(12, 0)
         )
 
-        assertEquals("Work", activeProfile?.name)
+        assertEquals(
+            "Work",
+            activeProfile?.name
+        )
     }
 
     @Test
@@ -53,8 +56,8 @@ class ActiveProfileTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -76,8 +79,8 @@ class ActiveProfileTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(6, 0),
-                    endTime = LocalTime.of(8, 0)
+                    startMinute = 6 * 60,
+                    endMinute = 8 * 60
                 )
             )
         )
@@ -88,8 +91,8 @@ class ActiveProfileTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -100,8 +103,84 @@ class ActiveProfileTest {
             time = LocalTime.of(8, 0)
         )
 
-        assertEquals("Work", activeProfile?.name)
+        assertEquals(
+            "Work",
+            activeProfile?.name
+        )
     }
 
+    @Test
+    fun profileEndingAtMidnightIsActiveBeforeMidnight() {
+        val evening = Profile(
+            name = "Evening",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
 
+        val activeProfile = findActiveProfile(
+            profiles = listOf(evening),
+            dayOfWeek = DayOfWeek.MONDAY,
+            time = LocalTime.of(23, 59)
+        )
+
+        assertEquals(
+            "Evening",
+            activeProfile?.name
+        )
+    }
+
+    @Test
+    fun profileEndingAtMidnightIsNotActiveAtNextDayMidnight() {
+        val evening = Profile(
+            name = "Evening",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val activeProfile = findActiveProfile(
+            profiles = listOf(evening),
+            dayOfWeek = DayOfWeek.TUESDAY,
+            time = LocalTime.MIDNIGHT
+        )
+
+        assertNull(activeProfile)
+    }
+
+    @Test
+    fun midnightMorningScheduleIsActiveAtMidnight() {
+        val morning = Profile(
+            name = "Morning",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.TUESDAY),
+                    startMinute = 0,
+                    endMinute = 8 * 60
+                )
+            )
+        )
+
+        val activeProfile = findActiveProfile(
+            profiles = listOf(morning),
+            dayOfWeek = DayOfWeek.TUESDAY,
+            time = LocalTime.MIDNIGHT
+        )
+
+        assertEquals(
+            "Morning",
+            activeProfile?.name
+        )
+    }
 }

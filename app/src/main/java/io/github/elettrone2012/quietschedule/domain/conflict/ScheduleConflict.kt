@@ -14,17 +14,38 @@ fun findConflict(
     first: Schedule,
     second: Schedule
 ): ScheduleConflict? {
-    val commonDays = first.daysOfWeek.intersect(second.daysOfWeek)
+    val commonDays =
+        first.daysOfWeek.intersect(
+            second.daysOfWeek
+        )
 
     for (day in commonDays) {
-        val overlapStart = maxOf(first.startTime, second.startTime)
-        val overlapEnd = minOf(first.endTime, second.endTime)
+        val overlapStartMinute =
+            maxOf(
+                first.startMinute,
+                second.startMinute
+            )
 
-        if (overlapStart < overlapEnd) {
+        val overlapEndMinute =
+            minOf(
+                first.endMinute,
+                second.endMinute
+            )
+
+        if (
+            overlapStartMinute <
+            overlapEndMinute
+        ) {
             return ScheduleConflict(
                 dayOfWeek = day,
-                overlapStart = overlapStart,
-                overlapEnd = overlapEnd
+                overlapStart =
+                    Schedule.minuteToLocalTime(
+                        overlapStartMinute
+                    ),
+                overlapEnd =
+                    Schedule.minuteToLocalTime(
+                        overlapEndMinute
+                    )
             )
         }
     }

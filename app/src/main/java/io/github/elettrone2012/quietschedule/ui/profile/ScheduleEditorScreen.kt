@@ -64,17 +64,17 @@ fun ScheduleEditorScreen(
         )
     }
 
-    var startTime by remember(schedule) {
+    var startMinute by remember(schedule) {
         mutableStateOf(
-            schedule?.startTime
-                ?: LocalTime.of(9, 0)
+            schedule?.startMinute
+                ?: 9 * 60
         )
     }
 
-    var endTime by remember(schedule) {
+    var endMinute by remember(schedule) {
         mutableStateOf(
-            schedule?.endTime
-                ?: LocalTime.of(17, 0)
+            schedule?.endMinute
+                ?: 17 * 60
         )
     }
 
@@ -116,14 +116,19 @@ fun ScheduleEditorScreen(
         )
 
     editingTime?.let { target ->
-        val initialTime =
+        val initialMinute =
             when (target) {
                 EditingTime.START ->
-                    startTime
+                    startMinute
 
                 EditingTime.END ->
-                    endTime
+                    endMinute
             }
+
+        val initialTime =
+            Schedule.minuteToLocalTime(
+                initialMinute
+            )
 
         val timePickerState =
             rememberTimePickerState(
@@ -154,20 +159,24 @@ fun ScheduleEditorScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val selectedTime =
-                            LocalTime.of(
-                                timePickerState.hour,
-                                timePickerState.minute
-                            )
+                        val selectedMinute =
+                            timePickerState.hour * 60 +
+                                    timePickerState.minute
 
                         when (target) {
-                            EditingTime.START ->
-                                startTime =
-                                    selectedTime
+                            EditingTime.START -> {
+                                startMinute =
+                                    selectedMinute
+                            }
 
-                            EditingTime.END ->
-                                endTime =
-                                    selectedTime
+                            EditingTime.END -> {
+                                endMinute =
+                                    if (selectedMinute == 0) {
+                                        Schedule.MINUTES_PER_DAY
+                                    } else {
+                                        selectedMinute
+                                    }
+                            }
                         }
 
                         errorMessage = null
@@ -305,9 +314,13 @@ fun ScheduleEditorScreen(
                         R.string.start_time
                     ),
                 value =
-                    startTime.format(
-                        timeFormatter
-                    ),
+                    Schedule
+                        .minuteToLocalTime(
+                            startMinute
+                        )
+                        .format(
+                            timeFormatter
+                        ),
                 onClick = {
                     editingTime =
                         EditingTime.START
@@ -320,9 +333,13 @@ fun ScheduleEditorScreen(
                         R.string.end_time
                     ),
                 value =
-                    endTime.format(
-                        timeFormatter
-                    ),
+                    Schedule
+                        .minuteToLocalTime(
+                            endMinute
+                        )
+                        .format(
+                            timeFormatter
+                        ),
                 onClick = {
                     editingTime =
                         EditingTime.END
@@ -349,7 +366,12 @@ fun ScheduleEditorScreen(
                     }
 
                     if (
-                        endTime <= startTime
+                        endMinute <= startMinute ||
+                        (
+                                startMinute == 0 &&
+                                        endMinute ==
+                                        Schedule.MINUTES_PER_DAY
+                                )
                     ) {
                         errorMessage =
                             endTimeError
@@ -361,10 +383,10 @@ fun ScheduleEditorScreen(
                         Schedule(
                             daysOfWeek =
                                 selectedDays,
-                            startTime =
-                                startTime,
-                            endTime =
-                                endTime
+                            startMinute =
+                                startMinute,
+                            endMinute =
+                                endMinute
                         )
 
                     errorMessage = null

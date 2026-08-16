@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -32,6 +33,9 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,21 +81,43 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            stringResource(
-                                R.string.app_name
-                            )
+                    Row(
+                        verticalAlignment =
+                            Alignment.CenterVertically,
+                        horizontalArrangement =
+                            Arrangement.spacedBy(10.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(
+                                R.drawable.quietschedule_logo
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
                         )
 
-                        Text(
-                            text = stringResource(
-                                R.string.app_version,
-                                versionName
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column {
+                            Text(
+                                stringResource(
+                                    R.string.app_name
+                                )
+                            )
+
+                            Text(
+                                text =
+                                    stringResource(
+                                        R.string.app_version,
+                                        versionName
+                                    ),
+                                style =
+                                    MaterialTheme
+                                        .typography
+                                        .bodySmall,
+                                color =
+                                    MaterialTheme
+                                        .colorScheme
+                                        .onSurfaceVariant
+                            )
+                        }
                     }
                 }
             )
@@ -109,9 +135,10 @@ fun HomeScreen(
                 Arrangement.spacedBy(20.dp)
         ) {
             Text(
-                text = stringResource(
-                    R.string.profiles
-                ),
+                text =
+                    stringResource(
+                        R.string.profiles
+                    ),
                 style =
                     MaterialTheme.typography.titleMedium
             )
@@ -122,11 +149,14 @@ fun HomeScreen(
                         Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = stringResource(
-                            R.string.dnd_access_required
-                        ),
+                        text =
+                            stringResource(
+                                R.string.dnd_access_required
+                            ),
                         color =
-                            MaterialTheme.colorScheme.error
+                            MaterialTheme
+                                .colorScheme
+                                .error
                     )
 
                     Button(
@@ -148,7 +178,9 @@ fun HomeScreen(
                 Text(
                     text = it,
                     color =
-                        MaterialTheme.colorScheme.error
+                        MaterialTheme
+                            .colorScheme
+                            .error
                 )
             }
 
@@ -208,7 +240,8 @@ fun HomeScreen(
 
             Button(
                 onClick = onHelp,
-                modifier = Modifier.fillMaxWidth()
+                modifier =
+                    Modifier.fillMaxWidth()
             ) {
                 Text(
                     stringResource(
@@ -228,7 +261,7 @@ private fun ProfileRow(
     onClick: () -> Unit,
     onEnabledChange: (Boolean) -> Unit
 ) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
@@ -237,38 +270,47 @@ private fun ProfileRow(
             .padding(
                 vertical = 8.dp
             ),
-        verticalArrangement =
-            Arrangement.spacedBy(6.dp)
+        horizontalArrangement =
+            Arrangement.spacedBy(12.dp),
+        verticalAlignment =
+            Alignment.Top
     ) {
-        Text(
-            text = profile.name,
-            style =
-                MaterialTheme.typography.titleMedium
+        Switch(
+            checked =
+                profile.enabled,
+            onCheckedChange =
+                onEnabledChange
         )
 
-        profile.schedules.forEach { schedule ->
-            Text(
-                text = formatSchedule(
-                    schedule = schedule,
-                    locale = locale,
-                    use24HourFormat =
-                        use24HourFormat
-                ),
-                style =
-                    MaterialTheme.typography.bodyMedium
-            )
-        }
-
-        Row(
+        Column(
             modifier =
-                Modifier.fillMaxWidth()
+                Modifier.weight(1f),
+            verticalArrangement =
+                Arrangement.spacedBy(6.dp)
         ) {
-            Switch(
-                checked =
-                    profile.enabled,
-                onCheckedChange =
-                    onEnabledChange
+            Text(
+                text = profile.name,
+                style =
+                    MaterialTheme
+                        .typography
+                        .titleMedium
             )
+
+            profile.schedules.forEach { schedule ->
+                Text(
+                    text =
+                        formatSchedule(
+                            schedule = schedule,
+                            locale = locale,
+                            use24HourFormat =
+                                use24HourFormat
+                        ),
+                    style =
+                        MaterialTheme
+                            .typography
+                            .bodyMedium
+                )
+            }
         }
     }
 }

@@ -12,8 +12,8 @@ class ProfileActivityTest {
 
     private val schedule = Schedule(
         daysOfWeek = setOf(DayOfWeek.MONDAY),
-        startTime = LocalTime.of(9, 0),
-        endTime = LocalTime.of(17, 0)
+        startMinute = 9 * 60,
+        endMinute = 17 * 60
     )
 
     @Test
@@ -60,6 +60,28 @@ class ProfileActivityTest {
             profile.isActiveAt(
                 dayOfWeek = DayOfWeek.MONDAY,
                 time = LocalTime.of(18, 0)
+            )
+        )
+    }
+
+    @Test
+    fun profileEndingAtMidnightIsActiveBeforeMidnight() {
+        val profile = Profile(
+            name = "Evening",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        assertTrue(
+            profile.isActiveAt(
+                dayOfWeek = DayOfWeek.MONDAY,
+                time = LocalTime.of(23, 59)
             )
         )
     }

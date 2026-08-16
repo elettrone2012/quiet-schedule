@@ -14,8 +14,14 @@ data class PersistedProfile(
 @Serializable
 data class PersistedSchedule(
     val daysOfWeek: List<String>,
-    val startTime: String,
-    val endTime: String
+
+    // Nuovo formato
+    val startMinute: Int? = null,
+    val endMinute: Int? = null,
+
+    // Vecchio formato, mantenuto per compatibilità
+    val startTime: String? = null,
+    val endTime: String? = null
 )
 
 @Serializable

@@ -12,5 +12,9 @@ fun Schedule.isActiveAt(
         return false
     }
 
-    return time >= startTime && time < endTime
+    val currentMinute =
+        Schedule.minuteOfDay(time)
+
+    return currentMinute >= startMinute &&
+            currentMinute < endMinute
 }

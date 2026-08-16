@@ -9,7 +9,7 @@ import io.github.elettrone2012.quietschedule.domain.model.SenderCategory
 import io.github.elettrone2012.quietschedule.domain.model.SenderScope
 import io.github.elettrone2012.quietschedule.domain.model.SuppressedVisualEffects
 import java.time.DayOfWeek
-import java.time.LocalTime
+
 
 fun Profile.toPersisted(): PersistedProfile {
     return PersistedProfile(
@@ -33,17 +33,62 @@ fun PersistedProfile.toDomain(): Profile {
 
 private fun Schedule.toPersisted(): PersistedSchedule {
     return PersistedSchedule(
-        daysOfWeek = daysOfWeek.map { it.name },
-        startTime = startTime.toString(),
-        endTime = endTime.toString()
+        daysOfWeek =
+            daysOfWeek.map { it.name },
+        startMinute =
+            startMinute,
+        endMinute =
+            endMinute
     )
 }
 
 private fun PersistedSchedule.toDomain(): Schedule {
+    val domainDays =
+        daysOfWeek
+            .map { DayOfWeek.valueOf(it) }
+            .toSet()
+
+    if (
+        startMinute != null &&
+        endMinute != null
+    ) {
+        return Schedule(
+            daysOfWeek = domainDays,
+            startMinute = startMinute,
+            endMinute = endMinute
+        )
+    }
+
+    val legacyStart =
+        requireNotNull(startTime) {
+            "Missing schedule start time"
+        }
+
+    val legacyEnd =
+        requireNotNull(endTime) {
+            "Missing schedule end time"
+        }
+
+    val parsedStart =
+        java.time.LocalTime.parse(
+            legacyStart
+        )
+
+    val parsedEnd =
+        java.time.LocalTime.parse(
+            legacyEnd
+        )
+
     return Schedule(
-        daysOfWeek = daysOfWeek.map { DayOfWeek.valueOf(it) }.toSet(),
-        startTime = LocalTime.parse(startTime),
-        endTime = LocalTime.parse(endTime)
+        daysOfWeek = domainDays,
+        startMinute =
+            Schedule.minuteOfDay(
+                parsedStart
+            ),
+        endMinute =
+            Schedule.minuteOfDay(
+                parsedEnd
+            )
     )
 }
 

@@ -19,8 +19,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -31,8 +31,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -43,10 +43,22 @@ class ProfileConflictTest {
         )
 
         assertNotNull(conflict)
-        assertEquals("Morning", conflict?.conflictingProfile?.name)
-        assertEquals(DayOfWeek.MONDAY, conflict?.scheduleConflict?.dayOfWeek)
-        assertEquals(LocalTime.of(9, 0), conflict?.scheduleConflict?.overlapStart)
-        assertEquals(LocalTime.of(10, 0), conflict?.scheduleConflict?.overlapEnd)
+        assertEquals(
+            "Morning",
+            conflict?.conflictingProfile?.name
+        )
+        assertEquals(
+            DayOfWeek.MONDAY,
+            conflict?.scheduleConflict?.dayOfWeek
+        )
+        assertEquals(
+            LocalTime.of(9, 0),
+            conflict?.scheduleConflict?.overlapStart
+        )
+        assertEquals(
+            LocalTime.of(10, 0),
+            conflict?.scheduleConflict?.overlapEnd
+        )
     }
 
     @Test
@@ -57,8 +69,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -69,8 +81,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -82,6 +94,7 @@ class ProfileConflictTest {
 
         assertNull(conflict)
     }
+
     @Test
     fun sameTimeOnDifferentDaysDoesNotConflict() {
         val profile = Profile(
@@ -90,8 +103,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -102,8 +115,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.TUESDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -128,8 +141,8 @@ class ProfileConflictTest {
                         DayOfWeek.TUESDAY,
                         DayOfWeek.WEDNESDAY
                     ),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -140,8 +153,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.TUESDAY),
-                    startTime = LocalTime.of(16, 0),
-                    endTime = LocalTime.of(18, 0)
+                    startMinute = 16 * 60,
+                    endMinute = 18 * 60
                 )
             )
         )
@@ -152,14 +165,17 @@ class ProfileConflictTest {
         )
 
         assertNotNull(conflict)
+
         assertEquals(
             DayOfWeek.TUESDAY,
             conflict?.scheduleConflict?.dayOfWeek
         )
+
         assertEquals(
             LocalTime.of(16, 0),
             conflict?.scheduleConflict?.overlapStart
         )
+
         assertEquals(
             LocalTime.of(17, 0),
             conflict?.scheduleConflict?.overlapEnd
@@ -174,8 +190,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(6, 0),
-                    endTime = LocalTime.of(8, 0)
+                    startMinute = 6 * 60,
+                    endMinute = 8 * 60
                 )
             )
         )
@@ -186,8 +202,8 @@ class ProfileConflictTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -198,5 +214,49 @@ class ProfileConflictTest {
         )
 
         assertNull(conflict)
+    }
+
+    @Test
+    fun scheduleEndingAtMidnightConflictsWithLateEveningSchedule() {
+        val profile = Profile(
+            name = "Evening",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val otherProfile = Profile(
+            name = "Late",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 23 * 60,
+                    endMinute = 23 * 60 + 30
+                )
+            )
+        )
+
+        val conflict = findConflict(
+            profile = profile,
+            otherProfiles = listOf(otherProfile)
+        )
+
+        assertNotNull(conflict)
+
+        assertEquals(
+            LocalTime.of(23, 0),
+            conflict?.scheduleConflict?.overlapStart
+        )
+
+        assertEquals(
+            LocalTime.of(23, 30),
+            conflict?.scheduleConflict?.overlapEnd
+        )
     }
 }

@@ -3,11 +3,10 @@ package io.github.elettrone2012.quietschedule.domain.scheduling
 import io.github.elettrone2012.quietschedule.domain.model.Profile
 import io.github.elettrone2012.quietschedule.domain.model.Schedule
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.time.DayOfWeek
 import java.time.LocalDateTime
-import java.time.LocalTime
-import org.junit.Assert.assertNull
 
 class NextScheduleEventTest {
 
@@ -19,8 +18,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -63,8 +62,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -107,8 +106,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -151,8 +150,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -163,8 +162,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(18, 0),
-                    endTime = LocalTime.of(22, 0)
+                    startMinute = 18 * 60,
+                    endMinute = 22 * 60
                 )
             )
         )
@@ -203,6 +202,7 @@ class NextScheduleEventTest {
             event?.type
         )
     }
+
     @Test
     fun adjacentProfilesHaveSharedBoundaryAtSameTime() {
         val morning = Profile(
@@ -211,8 +211,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(6, 0),
-                    endTime = LocalTime.of(8, 0)
+                    startMinute = 6 * 60,
+                    endMinute = 8 * 60
                 )
             )
         )
@@ -223,8 +223,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 8 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -253,6 +253,7 @@ class NextScheduleEventTest {
             event?.dateTime
         )
     }
+
     @Test
     fun disabledProfilesAreIgnored() {
         val disabledProfile = Profile(
@@ -261,8 +262,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(10, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 10 * 60
                 )
             )
         )
@@ -273,8 +274,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.MONDAY),
-                    startTime = LocalTime.of(11, 0),
-                    endTime = LocalTime.of(12, 0)
+                    startMinute = 11 * 60,
+                    endMinute = 12 * 60
                 )
             )
         )
@@ -288,13 +289,26 @@ class NextScheduleEventTest {
         )
 
         val event = findNextScheduleEvent(
-            profiles = listOf(disabledProfile, enabledProfile),
+            profiles = listOf(
+                disabledProfile,
+                enabledProfile
+            ),
             now = now
         )
 
-        assertEquals("Enabled", event?.profile?.name)
         assertEquals(
-            LocalDateTime.of(2026, 8, 10, 11, 0),
+            "Enabled",
+            event?.profile?.name
+        )
+
+        assertEquals(
+            LocalDateTime.of(
+                2026,
+                8,
+                10,
+                11,
+                0
+            ),
             event?.dateTime
         )
     }
@@ -307,8 +321,8 @@ class NextScheduleEventTest {
             schedules = listOf(
                 Schedule(
                     daysOfWeek = setOf(DayOfWeek.TUESDAY),
-                    startTime = LocalTime.of(9, 0),
-                    endTime = LocalTime.of(17, 0)
+                    startMinute = 9 * 60,
+                    endMinute = 17 * 60
                 )
             )
         )
@@ -327,10 +341,108 @@ class NextScheduleEventTest {
         )
 
         assertEquals(
-            LocalDateTime.of(2026, 8, 11, 9, 0),
+            LocalDateTime.of(
+                2026,
+                8,
+                11,
+                9,
+                0
+            ),
             event?.dateTime
         )
-        assertEquals(ScheduleEventType.START, event?.type)
+
+        assertEquals(
+            ScheduleEventType.START,
+            event?.type
+        )
+    }
+
+    @Test
+    fun scheduleEndingAtMidnightReturnsNextDayMidnightAsEndEvent() {
+        val profile = Profile(
+            name = "Evening",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val now = LocalDateTime.of(
+            2026,
+            8,
+            10,
+            23,
+            0
+        )
+
+        val event = findNextScheduleEvent(
+            profiles = listOf(profile),
+            now = now
+        )
+
+        assertEquals(
+            LocalDateTime.of(
+                2026,
+                8,
+                11,
+                0,
+                0
+            ),
+            event?.dateTime
+        )
+
+        assertEquals(
+            ScheduleEventType.END,
+            event?.type
+        )
+    }
+
+    @Test
+    fun midnightEndBoundaryMovesToNextWeekAfterItHasPassed() {
+        val profile = Profile(
+            name = "Evening",
+            enabled = true,
+            schedules = listOf(
+                Schedule(
+                    daysOfWeek = setOf(DayOfWeek.MONDAY),
+                    startMinute = 22 * 60,
+                    endMinute = Schedule.MINUTES_PER_DAY
+                )
+            )
+        )
+
+        val now = LocalDateTime.of(
+            2026,
+            8,
+            11,
+            0,
+            1
+        )
+
+        val event = findNextScheduleEvent(
+            profiles = listOf(profile),
+            now = now
+        )
+
+        assertEquals(
+            LocalDateTime.of(
+                2026,
+                8,
+                17,
+                22,
+                0
+            ),
+            event?.dateTime
+        )
+
+        assertEquals(
+            ScheduleEventType.START,
+            event?.type
+        )
     }
 
     @Test
